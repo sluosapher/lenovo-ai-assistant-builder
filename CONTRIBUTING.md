@@ -2,7 +2,7 @@
 
 ### License
 
-<PROJECT NAME> is licensed under the terms in [LICENSE]<link to license file in repo>. By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
+Intel AI Assistant Builder is licensed under the terms in [LICENSE](LICENSE.md). By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
 
 ### Sign your work
 
@@ -51,7 +51,7 @@ Then you just add a line to every git commit message:
 
     Signed-off-by: Joe Smith <joe.smith@email.com>
 
-Use your real name (sorry, no pseudonyms or anonymous contributions.)
+Use your real name (sorry, no anonymous contributions.)
 
 If you set your `user.name` and `user.email` git configs, you can sign your
 commit automatically with `git commit -s`.
