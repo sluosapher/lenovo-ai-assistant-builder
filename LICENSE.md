@@ -1,4 +1,5 @@
-MIT License
+Source code licensed under the MIT License
+SPDX-License-Identifier: MIT
 
 Copyright (c) 2025 Intel Corporation
 
@@ -20,7 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+=======================================================================
 
+
+
+
+Documentation and non-code assets licensed under Creative Commons Attribution 
+4.0 International
+SPDX-License-Identifier: CC-BY-4.0
 
 Attribution 4.0 International
 
