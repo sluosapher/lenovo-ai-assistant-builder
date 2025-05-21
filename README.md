@@ -1,6 +1,6 @@
 [![A pile of legos with white text AI-generated content may be incorrect.](media/917896de1185740322e7ad5f45d79c15.jpeg)](https://aibuilder.intel.com)
 
-<h1 align="center">Intel® AI Assistant Builder <br> SuperBuilder <br></h1>
+<h1 align="center">Intel® AI Assistant Builder<br>(a.k.a. SuperBuilder)</h1>
 
 <p align="justify"><strong>Intel® AI Assistant Builder</strong>—also known as <strong>SuperBuilder</strong>—is Intel’s Gen-AI reference design platform that enables the rapid creation of custom AI assistants and agents tailored to specific industry needs and proprietary data.
 These assistants streamline everyday tasks and deliver intelligent solutions by leveraging your internal knowledge bases—<strong>all while running entirely locally</strong> on Intel®-based AI PCs. Your data and workflows remain private and secure, powered by cutting-edge large language models (LLMs), customizable agentic workflows, and performance-optimized processing.</p>
@@ -68,9 +68,9 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 ### Getting started 
 ***
 > [!WARNING]
-> Currently, Intel® AI Assistant Builder only supports **one Assistant installation at a time** on your AI PC. Users are advised to fully remove the existing Assistant before installing other ones.
+> Currently, Intel® AI Assistant Builder supports **one Assistant installation at a time**. Please uninstall the existing Assistant before installing a different one.
 - #### Download the software
-1. Open your web browser and go to [https://aibuilder.intel.com](https://aibuilder.intel.com/)
+1. Visit [https://aibuilder.intel.com](https://aibuilder.intel.com/)
 2. Click on one of the available AI Assistants to start the download. For general use, we recommend the “Sales Assistant”. The assistant’s capability (and appearance) can be customized after installation.
 3. Locate and open the downloaded installer. The wizard will guide you through the required steps to successfully complete the installation.
 
@@ -88,22 +88,22 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 ### What's included
 ***
 #### Sample code
-  This folder contains a sample application created using SuperBuilder API service. We included sample projects build from `dotnet` , `Python` and `Go`. 
+  This folder contains a sample application created using the SuperBuilder API service. We included sample projects built from `dotnet` , `Python` and `Go`. 
 
   [Sample Code](example/README.md)
 
 #### [SuperBuilder Service API Guide](https://intel.github.io/intel-ai-assistant-builder/)
-  This folder contains API service documentation. SuperBuilder API service's main entry point is the [AssistantService](https://intel.github.io/intel-ai-assistant-builder/html/127056c5-b74d-e4f7-a324-5e4aa7c09935.htm) class. You can also access the API document from this link: [API Documentation](https://intel.github.io/intel-ai-assistant-builder/)
+  This folder contains API service documentation. SuperBuilder's API service main entry point is the [AssistantService](https://intel.github.io/intel-ai-assistant-builder/html/127056c5-b74d-e4f7-a324-5e4aa7c09935.htm) class. You can also access the API document from this link: [API Documentation](https://intel.github.io/intel-ai-assistant-builder/)
   
    ![Assistant Service](media/api_service_border.png)
  
 <br>
 
-### LLM Model List
+### LLM Model List and Recommended Models
 ***
-<p align="justify">Intel® AI Assistant Builder supports most of LLM models that enabled by <strong>Intel® OpenVINO</strong>. The application implements model recommendation based on the assistant type and system hardware, using the performance and accurancy data we collected inside our lab.</p> 
+<p align="justify">Intel® AI Assistant Builder supports most LLM models enabled by <strong>Intel® OpenVINO</strong>. Model recommendations are made based on the assistant type and system hardware, using the performance and accurancy data collected inside our lab.</p> 
 
-Currently in `v1.2.0`, we provide the following models in our application selection:
+As of version `v1.2.X`, the following models are available for selection:
 
 - **Chat Models**
   ```
@@ -135,7 +135,7 @@ Currently in `v1.2.0`, we provide the following models in our application select
   * phi-3-mini-2k-int4_sym_g128-npu
   ``` 
 
-Our application also allows you to **upload your own model** or **convert models from Hugging Face directly** from our UI. Check out the detailed model features.
+You may also **upload your own model** or **convert models from Hugging Face directly** using the provided "Model Upload" or "Model Conversion" capabilities. Please consult the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) for full details on these features.
 
  ![Model Tools](media/models_action_border.png)
 
@@ -143,15 +143,15 @@ Our application also allows you to **upload your own model** or **convert models
 
 ### Features
 *** 
- * **Local LLM and RAG chat**: Build a local knowledge base with a variety of file formats.
- * **Configurable Parameters and Settings**: Provide a rich sets of parameters for configuring LLM and RAG models, ingestion, retrieval, and reranking processes, and controlling application operations.
- * **Special Query Functions**: Enable users to perform domain specific activities, such as querying Excel files and images.
- * **Agentic Workflow Example**: Include a built-in agentic workflow example for Resume Match.
- * **Model Management**: Facilitate model switching, uploading, and conversion.
- * **UI customization**: Easily build a customized application interface. 
- * **Profile Management**: Import and export Assistant profile for backup, profile switching, and sharing.
+ * **Local LLM and RAG chat**: Build a local knowledge base using your documentation (various file formats are supported).
+ * **Configurable Parameters and Settings**: Numerous parameters can be adjusted to tune LLM and RAG models, ingestion, retrieval, reranking processes, and application operations.
+ * **Special Query Functions**: Focus the assistant on specific functions to extend capability and maximize accuracy and performance.  Special queries include the ability to: Query tabular data, query images, rank resumes against a job description, and more.
+ * **Agentic Workflow - Resume Match**: The agentic workflow illustrated in the "Resume Match" function is one example of how capabilities can be extended to support real world use cases that matter to you.
+ * **Model Management**: Easily switch between models, upload a model, or convert a model to take advantage of the latest LLM optimizations and capabilities.
+ * **UI customization**: Use the "Appearance" adjustments to easily customize the interface to fit your needs. 
+ * **Profile Management**: Import and export Assistant profiles/configurations for backup, profile switching, and sharing.
  * **Localization Support**: Partial localization is available for Simplified Chinese (zh-Hans) and Traditional Chinese (zh-Hant). 
- * **Admin Mode**: An AI assistant builder with full access to settings can configure, preview, and evaluate the end-user experience using a simple chatbot interface.
+ * **Admin Mode**: Enable "Admin" features like adjusting settings and adding documentation to the knowledge base **-OR-** limit features to standard "User" capabilities like asking the Assistant questions.
  * **API Services**: Expose all features through SuperBuilder API services.
    
 <br>
@@ -160,16 +160,16 @@ Our application also allows you to **upload your own model** or **convert models
 ***
 
 * **Multi-Agent Orchestration Framework**: Implement AI agents built with MCP (Model Context Protocol) for enhanced coordination.
-* **E2E Enterprise Solution**: Facilitate Intel AIPC connection to edge/server clusters for comprehensive enterprise integration.
-* **SuperBuilder API Service Only Installation Package**: Offer a streamlined API package that allows users to easily create custom UIs and seamlessly integrate SuperBuilder capabilities.
-* **SST and TTS multimodality Features**: Provide advanced speech synthesis and text-to-speech functionalities that enable dynamic user interaction and communication.
+* **E2E Enterprise Solution**: Connect your Intel AIPC to edge/server clusters for comprehensive enterprise integration.
+* **SuperBuilder API Service Only Installation Package**: A streamlined API package to create custom UIs and seamlessly integrate SuperBuilder capabilities.
+* **SST and TTS multimodality Features**: Advanced speech synthesis and text-to-speech functionalities for enhanced user interaction and communication.
 
 <br>
 
 ### Tips, Troubleshooting, Known Issues
 ***
 > [!IMPORTANT]
->* **Installation Issues**: Some antivirus software such as McAfee Antivirus software is known to interfere with the installation process of Intel® AI Assistant Builder on Windows systems. If you encounter installation problems and have antivirus installed, please stop the real-time scanning feature and then reinstall Intel® AI Assistant Builder. Once the installation is done and the models are loaded, you can re-enable it. Users might experience performance impact when antivirus real-time scanning is running.
+>* **Installation Issues**: Some antivirus software such as McAfee Antivirus software is known to interfere with the installation process of Intel® AI Assistant Builder on Windows systems. If you encounter installation problems and have antivirus installed, please stop the real-time scanning feature and then reinstall Intel® AI Assistant Builder. Once the installation is done and the models are loaded, you can re-enable it. Users might experience performance impacts when antivirus real-time scanning is running.
 
 > [!WARNING]
 >* **Model Download Errors**: This issue could be due to a few reasons: 
@@ -178,20 +178,20 @@ Our application also allows you to **upload your own model** or **convert models
 >      - **For users in the PRC**, ***Model Scope*** is recommended.
 >      - **For users in other regions**, please choose the ***Hugging Face***.
 >* **Export Config Issues**: For configurations involving a large set of documents, only a partial set of text chunks is currently exported. Support for exporting a full set is currently under development.
->* **NPU model limitation**: The NPU model is supported only on ***Lunar Lake*** system.
+>* **NPU model limitation**: The NPU model is supported only on ***Lunar Lake*** systems.
 
 > [!CAUTION]
->* **Initial load time / Unresponsive**: When the AI assistant is started, the assistant service and models must be initialized before the assistant can be used. During this time, the chat text entry field will be disabled, and a status message at the bottom of the window will indicate what is happening. When the AI assistant is ready, the status bar at the bottom of the window will be removed and the chat text entry will be enabled. Please note that the actual waiting time varies.
+>* **Initial load time / Unresponsive**: When the AI assistant is started, the assistant service and models must be initialized before the assistant can be used. During this time, the chat text entry field will be disabled, and a status message at the bottom of the window will indicate what is happening. When the AI assistant is ready, the status bar at the bottom of the window will be removed and the chat text entry will be enabled.
 > ![A close-up of a red and grey rectangle AI-generated content may be incorrect.](media/notification_border.png)
 >* **Model Loading Errors**: If a “model loading error” occurs, please make sure to update the GPU and NPU drivers to the latest version. The NPU model requires NPU Driver **32.0.100.3714 at a minimum**.
->* **Backend Not Ready**: During the first-time Intel® AI Assistant Builder start-up, errors may occur due to backend not ready condition, especially if the application is running for the first time on a system with a slow network connection.
+>* **Backend Not Ready**: When running the Intel® AI Assistant Builder for the first time a "backend not ready" condition may occur, especially when there is a slow network connection.  Please re-start the application and if possible move to a location which has a better network connection.
 >* **Upgrade Errors**: If you are upgrading from ```v1.1.0``` to ```v1.2.0```, the installer might have issues removing all your selected local files. If you wish to remove everything, we recommend fully uninstalling the application using Window's built-in _Add or Remove Programs_, and then installing ```v1.2.0```.
->* **Model Conversion Error**: The model conversion tool of Intel® AI Assistant Builder only supports models compatible with the **Intel® OpenVINO** platform. Not all models are supported. <br> 
+>* **Model Conversion Error**: The model conversion tool within the Intel® AI Assistant Builder supports models compatible with the **Intel® OpenVINO** platform. Not all models are supported. <br> 
 Some models on Hugging Face require user consent before they can be downloaded. Our application cannot proceed with the download until you consent to the Hugging Face model terms.
 >* **Query Tabular Data Issue**: Query Tabular Data will fail to process XLSX files having `time` format. A fix for this will be included in the next release.
 >* **Conversation History - Reset to Defaults Issue**: Although the `Reset to Defaults` button sets the `Conversation History` to 0, the conversation history is still utilized in the context. To resolve this issue, please manually adjust the value using the slider.
 >* **Intermittent Qwen2 and Qwen2.5 Models Issue**: The Qwen2 and Qwen2.5 models have a known intermittent issue where they occasionally generate unwanted responses with exclamation marks. This behavior is not consistently reproducible, but retrying the query typically resolves the problem.
->* **White Title Bar Issue:** When upgrading from an older version to v1.2.0, you might see a white title bar at the top. This is a known issue. You can use the Appearance Reset button in the settings menu to fix the style. If you want to keep your existing style, make sure you export and back up your existing style before you reset.
+>* **White Title Bar Issue:** When upgrading from an older version to v1.2.0, you might see a white title bar at the top.  Go to *Settings > Appearance* and click the "Reset" button to correct this. If you want to keep your existing style, make sure to export the configuration (*Settings > Export/Import Configuration > Export*) before resetting the appearance.
 > ![Model Tools](media/white_title_bar.png)
 
 > [!TIP]
@@ -209,10 +209,10 @@ Intel(R) AI Assistant Builder now officially supports Qwen2.5-7B, Phi4-mini, and
 Intel(R) AI Assistant Builder now supports direct model downloads from ModelScope.cn, improving accessibility and convenience.
 
 - Localization Support
-Partial localization is available for Simplified Chinese (zh-Hans) and Traditional Chinese (zh-Hant). Language settings are automatically adjusted based on your Windows system language, but users can also manually select their preferred language in the Intel(R) AI Assistant Builder settings.
+Partial localization is available for Simplified Chinese (zh-Hans) and Traditional Chinese (zh-Hant). Language settings are automatically adjusted based on your Windows system language, but you may manually select the preferred language under *Settings > Appearance > Language*
 
-- Admin Mode Feature Enable
-Intel(R) AI Assistant Builder now offers both a simple chatbot interface for end users and an admin interface with comprehensive configuration options. This enables administrators to configure, preview, and evaluate the end-user experience.
+- Admin Mode
+Switch between a simple chatbot interface for "standard" users and an "Admin" interface with comprehensive configuration options. This enables administrators to configure, preview, and evaluate the end-user experience.
 
 #### Previous Release Notes
 
