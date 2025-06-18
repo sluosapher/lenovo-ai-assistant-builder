@@ -271,4 +271,4 @@ For technical questions and feature requests, please use GitHub [Issues](https:/
 
 We would love to hear about your experience. Please contact us at [&#115;&#117;&#112;&#112;&#111;&#114;&#116;&#046;&#097;&#105;&#098;&#117;&#105;&#108;&#100;&#101;&#114;&#064;&#105;&#110;&#116;&#101;&#108;&#046;&#099;&#111;&#109;](mailto:support.aibuilder@intel.com).
 
-[Back to Top](#top)
+[Back to Top](#toc)
