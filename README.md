@@ -5,6 +5,8 @@
 <p align="justify"><strong>Intel® AI Assistant Builder</strong>—also known as <strong>SuperBuilder</strong>—is Intel’s Gen-AI reference design platform that enables the rapid creation of custom AI assistants and agents tailored to specific industry needs and proprietary data.
 These assistants streamline everyday tasks and deliver intelligent solutions by leveraging your internal knowledge bases—<strong>all while running entirely locally</strong> on Intel®-based AI PCs. Your data and workflows remain private and secure, powered by cutting-edge large language models (LLMs), customizable agentic workflows, and performance-optimized processing.</p>
 
+<a name="toc"></a>
+
 - [Key Benefits](#key-benefits)
 - [Prerequisites](#prerequisites)
   - [Hardware requirements](#hardware-requirements)
@@ -13,11 +15,12 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 - [What's included](#whats-included)
   - [Sample code](#sample-code)
   - [SuperBuilder Service API Guide](#superbuilder-service-api-guide)
-- [LLM Model List](#llm-model-list)
+- [LLM Model List and Recommended Models](#llm-model-list-and-recommended-models)
 - [Features](#features)
 - [Tips, Troubleshooting, Known Issues](#tips-troubleshooting-known-issues)
 - [Release Notes](#release-notes)
-  - [Version 1.2](#version-12)
+  - [Version 1.2.1](#version-121)
+  - [Version 1.2.0](#version-120)
   - [Previous Release Notes](#previous-release-notes)
     - [Version 1.1](#version-11)
     - [Version 1.0](#version-10)
@@ -198,9 +201,18 @@ Some models on Hugging Face require user consent before they can be downloaded. 
 >* **Multiple Assistants Support**: Users can use our Import and Export functions to try out multiple assistant profiles on the same local AI PC. 
 <br>
 
+
 ### Release Notes
 ***
-#### Version 1.2
+
+#### Version 1.2.1
+- Service Only Installer
+This installer will only install AI Assistant Builder service and backend. 
+
+- Bug fix for Arrow Lake System
+Fix installation issues with some Arrow Lake Systems. 
+
+#### Version 1.2.0
 
 - New Models Support
 Intel(R) AI Assistant Builder now officially supports Qwen2.5-7B, Phi4-mini, and Deepseek-R1-Distilled-Qwen-7B.
@@ -258,3 +270,5 @@ The new Collect Metrics parameter, when enabled by the user, gathers performance
 For technical questions and feature requests, please use GitHub [Issues](https://github.com/intel/intel-ai-assistant-builder/issues).
 
 We would love to hear about your experience. Please contact us at [&#115;&#117;&#112;&#112;&#111;&#114;&#116;&#046;&#097;&#105;&#098;&#117;&#105;&#108;&#100;&#101;&#114;&#064;&#105;&#110;&#116;&#101;&#108;&#046;&#099;&#111;&#109;](mailto:support.aibuilder@intel.com).
+
+[Back to Top](#toc)
