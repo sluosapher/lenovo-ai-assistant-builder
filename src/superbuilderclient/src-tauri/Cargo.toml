@@ -1,0 +1,59 @@
+[package]
+name = "IntelAIA"
+version = "1.2.0"
+description = "Intel(R) AI Assistant Builder"
+authors = ["Intel Corp"]
+edition = "2021"
+license = "MIT"
+copyright = "Copyright (c) 2025 [Intel Corp]"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "intel_aia_ui_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.5", features = [] }
+tonic-build = "0.12"
+
+[dependencies]
+tauri = { version = "2.2.5", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-clipboard-manager = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures = "0.3"
+reqwest = { version = "0.11", features = ["blocking"] }
+toml = "0.5"
+roxmltree = "0.16"
+base64 = "0.22.1"
+image = "0.25.5"
+sys-locale = "0.3.2"
+
+# grpc
+tonic = "0.12"
+tokio = { version = "1.0", features = ["full"] }
+prost = "0.13"
+
+#email
+lazy_static = "1.5.0"
+winreg = "0.53.0"
+outlook-exe = "0.1.0"
+
+[target."cfg(target_os = \"windows\")".dependencies]
+# Version needs to match tauri's
+windows = { version = "0.39.0", features = [
+  "Win32_Foundation",
+  "Win32_Graphics_Dwm",
+  "Win32_UI_Controls"
+] }
+
+

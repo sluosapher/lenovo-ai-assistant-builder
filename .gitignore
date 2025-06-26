@@ -3,3 +3,22 @@ __pycache__
 example/csharp/CSharpClientExample/obj/*
 example/csharp/CSharpClientExample/bin/*
 **/.vs/*
+
+##### Tauri and Angular 
+# Ignore Tauri build directories
+**/dist/
+**/target/
+
+# Ignore Angular build directories
+**/node_modules/
+**/.npm/
+
+# Ignore Tauri specific files
+## **/tauri.conf.json removed temporary to fit the needs of current development
+**/src-tauri/target/
+
+
+# Ignore build artifacts and logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

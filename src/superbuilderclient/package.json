@@ -1,0 +1,62 @@
+{
+  "name": "intel-ai-assistant-ui",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "author": "[Intel Corporation]",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2025 [Intel Corporation]",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intel/intel-ai-assistant-builder"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@fontsource/roboto": "^5.2.6",
+    "@grpc/grpc-js": "^1.10.9",
+    "@grpc/proto-loader": "^0.7.13",
+    "@mui/icons-material": "^5.16.6",
+    "@mui/material": "^5.16.6",
+    "@mui/x-data-grid": "^7.28.3",
+    "@tauri-apps/api": "2.2.0",
+    "@tauri-apps/plugin-clipboard-manager": "^2.2.0",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-fs": "^2.2.0",
+    "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-shell": "^2.2.0",
+    "ajv": "^8.17.1",
+    "compare-versions": "^6.1.1",
+    "dompurify": "^3.2.3",
+    "google-protobuf": "^3.21.2",
+    "grpc-web": "^1.5.0",
+    "i18next": "^25.0.1",
+    "i18next-http-backend": "^3.0.2",
+    "immer": "^10.1.1",
+    "install": "^0.13.0",
+    "npm": "^10.8.1",
+    "react": "^18.2.0",
+    "react-copy-to-clipboard": "^5.1.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^15.5.1",
+    "react-lines-ellipsis": "^0.15.4",
+    "react-loader-spinner": "^6.1.6",
+    "react-markdown": "^9.0.1",
+    "react-spinners": "^0.14.1",
+    "react-syntax-highlighter": "^15.6.1",
+    "remark-gfm": "^4.0.1",
+    "yaml": "^2.4.5",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.2.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.3"
+  }
+}

@@ -1,0 +1,885 @@
+use super::config::Config as MyConfig;
+use super::status as MyStatus;
+use futures::stream::StreamExt;
+use std::sync::Arc;
+use std::{env, path::PathBuf};
+use super_builder::super_builder_client::SuperBuilderClient;
+use super_builder::{ChatRequest, CheckHealthRequest};
+use tauri::State;
+use tonic::transport::Channel;
+use tokio::sync::Mutex;
+use tauri::Window;
+use tauri::Emitter;
+use serde::{Deserialize,Serialize};
+use serde_json::{Value, json};
+
+pub mod super_builder {
+    tonic::include_proto!("super_builder");
+}
+
+pub type SharedClient = Arc<Mutex<Option<SuperBuilderClient<Channel>>>>;
+
+#[derive(Deserialize)]
+pub struct ChatMessage {
+    #[serde(rename = "Role")]
+    role: String,
+    #[serde(rename = "Content")]
+    content: String,
+}
+
+#[tauri::command]
+pub async fn call_chat(
+    window: tauri::Window,
+    client: State<'_, SharedClient>,
+    name: String,
+    prompt: String,
+    conversation_history: Vec<ChatMessage>,
+    sid: i32, // session id to add chat messages to
+    query: Option<String>, // type of query to use on a set of files
+    files: Option<String> // files to use specifically for this query
+) -> Result<(), String> {
+    // Clone the client reference to avoid holding the lock for the entire function
+    let mut client_ref = {
+        let mut client_guard = client.lock().await;
+        client_guard.as_mut().ok_or("Client not initialized")?.clone()
+    };
+
+    // Convert the incoming messages to ConversationHistory
+    let history: Vec<super_builder::ConversationHistory> = conversation_history
+        .into_iter()
+        .map(|msg| super_builder::ConversationHistory {
+            role: msg.role,
+            content: msg.content,
+        })
+        .collect();
+
+    let request = ChatRequest {
+        name: name,
+        prompt: prompt,
+        history: history,
+        session_id: sid,
+        attached_files: files,
+        query_type: query,
+    };
+
+    let response = client_ref
+        .chat(request)
+        .await
+        .map_err(|e| format!("Failed to send chat: {}", e))?;
+
+
+    let mut stream = response.into_inner();
+
+    let mut stop_flag = false;
+    while let Some(message) = stream.next().await {
+        if stop_flag == false {
+            let _= window.emit("first_word", stop_flag);
+        }
+        stop_flag = true;
+        match message {
+            Ok(chat_response) => {
+                let msg: Value = serde_json::from_str(&chat_response.message)
+                    .expect("failed to read response message");
+                if let Some(message) = msg["message"].as_str() {
+                    // println!("bb: {}", message);
+                    window
+                        .emit("new_message", message)
+                        .map_err(|e| format!("Failed to emit message: {}", e))?;
+                } 
+            }
+            Err(e) => {
+                // Send stop signal to backend to stop chat generation
+                println!("Sending stop signal to backend to stop chat generation");
+                let request = super_builder::StopChatRequest {};
+                let response = client_ref
+                    .stop_chat(request)
+                    .await
+                    .map_err(|e| format!("Failed to stop chat: {}", e))?;
+                let _reply = response.into_inner();
+                window.emit("stream-completed", true).expect("Failed to emit stream completed event");
+                return Err(format!("Stream error: {}", e));
+            },
+        }
+    }
+
+    window.emit("stream-completed", true).expect("Failed to emit stream completed event");
+
+    Ok(())
+}
+
+// Attempt to stop backend chat generation early
+#[tauri::command]
+pub async fn stop_chat(
+    _window: tauri::Window,
+    client: State<'_, SharedClient>,
+) -> Result<(), String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    // Build and send stop chat request
+    let request = super_builder::StopChatRequest {};
+    let response = client_ref
+        .stop_chat(request)
+        .await
+        .map_err(|e| format!("Failed to stop chat: {}", e))?;
+    let _reply = response.into_inner();
+    // println!("Chat canceled");
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn load_models(
+    _window: tauri::Window,
+    client: State<'_, SharedClient>,
+) -> Result<bool, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    // Build and send load models request
+    let request = super_builder::LoadModelsRequest {};
+    let response = client_ref
+        .load_models(request)
+        .await
+        .map_err(|e| format!("Failed to load models: {}", e))?;
+    let reply = response.into_inner();
+    Ok(reply.status)
+}
+
+#[tauri::command]
+pub async fn connect_client(client: State<'_, SharedClient>) -> Result<(), String> {
+    // Determine the path to the config file, e.g., from an environment variable or default location
+    let config_path = env::var("CONFIG_PATH")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("config.toml"));
+
+    // Load the configuration
+    let config = MyConfig::load_config(config_path)
+        .map_err(|e| format!("Failed to load config: {:?}", e))?;
+
+    // Use the configuration to connect to the gRPC server
+    let host = config.grpc.host.unwrap_or_else(|| "localhost".to_string());
+    let port = config.grpc.port.unwrap_or_else(|| 50051); // Provide a default port if None
+
+    let new_client = SuperBuilderClient::connect(format!("http://{}:{}", host, port))
+        .await
+        .map_err(|_e| format!("Failed to connect to middleware."))?;
+
+    let mut client_guard = client.lock().await;
+    *client_guard = Some(new_client);
+
+    Ok(())
+    
+}
+
+
+#[tauri::command]
+pub async fn initialize_client() -> SharedClient {
+    Arc::new(Mutex::new(None))
+}
+
+
+#[tauri::command]
+pub async fn mw_say_hello(client: State<'_, SharedClient>) -> Result<String, String> {
+    // Lock the Mutex and ensure the client is mutable
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::SayHelloRequest {
+        name: "UI".to_string(),
+    };
+
+    let response = client_ref
+        .say_hello(request)
+        .await
+        .map_err(|e| format!("Failed to connect: {}", e))?;
+
+    // Extract the actual HealthReply message from the tonic::Response
+    let reply = response.into_inner();
+    println!("reply {}", reply.message.to_string());
+    Ok(reply.message.to_string())
+}
+
+#[tauri::command]
+pub async fn pyllm_say_hello(client: State<'_, SharedClient>) -> Result<String, String> {
+    // Lock the Mutex and ensure the client is mutable
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::SayHelloRequest {
+        name: "UI".to_string(),
+    };
+
+    let response = client_ref
+        .say_hello_pyllm(request)
+        .await
+        .map_err(|e| format!("Failed to connect: {}", e))?;
+
+    // Extract the actual HealthReply message from the tonic::Response
+    let reply = response.into_inner();
+    println!("reply {}", reply.message.to_string());
+    Ok(reply.message.to_string())
+}
+
+#[tauri::command]
+pub async fn llm_health_check(client: State<'_, SharedClient>) -> Result<(), String> {
+    // Lock the Mutex and ensure the client is mutable
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    
+    // Return the mutable reference to the client
+    let request = CheckHealthRequest {
+        type_of_check: "UI".to_string(),
+    };
+
+    let response = client_ref
+        .check_health(request)
+        .await
+        .map_err(|e| format!("Failed to connect: {}", e))?;
+
+    // Extract the actual HealthReply message from the tonic::Response
+    let health_reply = response.into_inner();
+
+    println!("health_reply {}", health_reply.status.to_string());
+
+    // Convert the string message to a HealthCheckStatus enum
+    let status = MyStatus::HealthCheckStatus::from_message(&health_reply.status);
+
+    match status {
+        MyStatus::HealthCheckStatus::Ready => {
+            // The service is healthy, return an Ok with no message
+            Ok(())
+        }
+        MyStatus::HealthCheckStatus::Healthy => {
+            // The service is healthy, return an Ok with no message
+            Ok(())
+        }
+        MyStatus::HealthCheckStatus::LlmModelNotFound => {
+            // The service is healthy, return an Ok with no message
+            Err("LLM mode is not found".to_string())
+        }
+        MyStatus::HealthCheckStatus::EmbeddingModelNotFound => {
+            // The service is healthy, return an Ok with no message
+            Err("Embedding mode is not found".to_string())
+        }
+        MyStatus::HealthCheckStatus::Downloading => {
+            // The service is healthy, return an Ok with no message
+            Err("Asset is downloading".to_string())
+        }
+        MyStatus::HealthCheckStatus::Unhealthy => {
+            // The service is unhealthy, return an Err with a message
+            Err("PyLlmService is unhealthy".to_string())
+        }
+        MyStatus::HealthCheckStatus::NotReady => {
+            // The service is not ready, return an Err with a message
+            Err("PyLlmService is not ready".to_string())
+        }
+        MyStatus::HealthCheckStatus::Unknown => {
+            // The health status is unknown, return an Err with a message
+            Err("PyLlmService is not available".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn upload_file(
+    window: tauri::Window,
+    client: State<'_, SharedClient>,
+    paths: String,
+) -> Result<(), String> {
+
+    // Clone the client reference to avoid holding the lock for the entire function
+    let mut client_ref = {
+        let mut client_guard = client.lock().await;
+        client_guard.as_mut().ok_or("Client not initialized")?.clone()
+    };
+    
+    let request = super_builder::AddFilesRequest {
+        files_to_upload: paths,
+    };
+
+    let response = client_ref
+        .add_files(request)
+        .await
+        .map_err(|e| format!("Failed to upload file: {}", e))?;
+
+    // Stream back file upload progress
+    let mut files_uploaded_result = String::from("");
+    let mut stream = response.into_inner();
+    while let Some(message) = stream.next().await {
+        match message {
+            Ok(file_response) => {
+                let files_uploaded = file_response.files_uploaded;
+                files_uploaded_result = files_uploaded.clone();
+                let mut current_file_progress = String::from("No progress");
+                let mut current_file_uploading = String::from("No file");
+
+                // Set optional fields if they exist
+                if let Some(current_file) = &file_response.current_file_uploading {
+                    current_file_uploading = current_file.clone();
+                }
+                if let Some(file_progress) = &file_response.current_file_progress {
+                    current_file_progress = file_progress.clone();
+                }
+
+                let msg = json!({
+                    "files_uploaded": files_uploaded,
+                    "current_file_uploading": current_file_uploading,
+                    "current_file_progress": current_file_progress,
+                });
+                
+                // Emit the file progress to invoker
+                window
+                    .emit("upload-progress", msg)
+                    .map_err(|e| format!("Failed to emit message: {}", e))?;
+            }
+            Err(e) => return Err(format!("Stream error: {}", e)),
+        }
+    }
+
+    // Inform window that upload request is complete with final uploaded files result
+    // println!("Returning files uploaded result: {}", files_uploaded_result);
+    window.emit("upload-completed", files_uploaded_result).expect("Failed to emit stream completed event");
+    Ok(())
+}
+
+// Attempt to stop backend file upload early
+#[tauri::command]
+pub async fn stop_upload_file(
+    _window: tauri::Window,
+    client: State<'_, SharedClient>,
+) -> Result<(), String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Build and send stop upload file request
+    let request = super_builder::StopAddFilesRequest {};
+    let response = client_ref
+        .stop_add_files(request)
+        .await
+        .map_err(|e| format!("Failed to stop upload file: {}", e))?;
+    let _reply = response.into_inner();
+    // println!("File upload canceled");
+    Ok(())
+}
+
+
+#[tauri::command]
+pub async fn remove_file(
+    client: State<'_, SharedClient>,
+    files: String, // This should be the file content sent from the frontend
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::RemoveFilesRequest {
+        files_to_remove: files,
+    };
+
+    let response = client_ref
+        .remove_files(request)
+        .await
+        .map_err(|e| format!("Failed to remove file: {}", e))?;
+
+    let reply = response.into_inner();
+    Ok(reply.files_removed)
+}
+
+#[tauri::command]
+pub async fn get_file_list(
+    client: State<'_, SharedClient>) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+   
+    let request = super_builder::GetFileListRequest {
+       file_type: "".to_string(),
+    };
+
+    let response = client_ref
+        .get_file_list(request)
+        .await
+        .map_err(|e| format!("Failed to get file list: {}", e))?;
+
+    let reply = response.into_inner();
+    
+    Ok(reply.file_list)
+}
+
+// Send email from outlook
+#[tauri::command]
+pub async fn send_email(
+    recipient: Option<String>,
+    subject: String,
+    message: String
+) -> Result<(), String> {
+
+    use std::{io, process};
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref OUTLOOK_EXE: Option<&'static str> = {
+            use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
+
+            const OUTLOOK_SUBKEY: &str =
+                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OUTLOOK.EXE";
+
+            let subkey = match RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey(OUTLOOK_SUBKEY) {
+                Ok(subkey) => subkey,
+                Err(_) => return None,
+            };
+            let value: String = match subkey.get_value("") {
+                Ok(value) => value,
+                Err(_) => return None,
+            };
+            Some(Box::leak(value.into_boxed_str()))
+        };
+    }
+
+    let recipient = recipient.unwrap_or_else(|| "noreply@example.org".to_string());
+    let inputs = (recipient + "?subject=" + subject.as_str() + "&body=" + 
+    message.replace('%', "%25")
+        .replace('"', "%22")
+        .replace('&', "%26")
+        .replace('?', "%3F").as_str()).to_string();
+
+    let outlook_exe =
+            OUTLOOK_EXE.ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "OUTLOOK.EXE").to_string())?;
+        let _ = process::Command::new(outlook_exe)
+            .arg("/c")
+            .arg("ipm.note")
+            .arg("/m")
+            .arg(inputs)
+            .spawn();
+    
+    Ok(())
+}
+
+
+#[tauri::command]
+pub async fn send_feedback(
+    client: State<'_, SharedClient>,
+    question: String,
+	feedback: String,
+    answer: String,
+	r#type: String, // This should be the file content sent from the frontend
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::AddFeedbackRequest {
+        question: question,
+        feedback: feedback,
+        feedback_type: r#type,
+        answer: Some(answer),
+    };
+
+    let response = client_ref
+        .add_feedback(request)
+        .await
+        .map_err(|e| format!("Failed to upload file: {}", e))?;
+
+    let reply = response.into_inner();
+    Ok(reply.message)
+}
+
+#[tauri::command]
+pub async fn download_file(
+    client: State<'_, SharedClient>,
+    file_url: String,
+    local_path: String,
+    token_id: Option<String>,
+    window: Window,
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::DownloadFilesRequest {
+        file_url: file_url.clone(),
+        local_path,
+        token_id
+    };
+
+    let mut response_stream = client_ref
+        .download_files(request)
+        .await
+        .map_err(|e| format!("Failed to download file: {}", e))?
+        .into_inner();
+    let mut last_file_downloaded = String::new();
+    while let Some(download_response) = response_stream
+        .message()
+        .await
+        .map_err(|e| format!("Error receiving download progress: {}", e))?
+    {
+
+        // Emit the progress to the frontend
+        let download_file = file_url.clone();
+        let progress_data = download_response.progress;
+        last_file_downloaded = download_response.file_downloaded.clone();
+        // Emit the event to the React frontend
+        window.emit("download-progress", (download_file, progress_data))
+            .map_err(|e| format!("Failed to emit progress event: {}", e))?;
+
+        // Check if the download is complete
+        if download_response.progress == 100 {
+            return Ok(download_response.file_downloaded);
+        }
+    }
+
+    Err(format!(
+        "{}",
+        last_file_downloaded
+    ))
+}
+
+
+#[tauri::command]
+pub async fn set_parameters(
+    client: State<'_, SharedClient>,
+    parameters_json: String
+) -> Result<(), String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Create the request
+    let request = super_builder::SetParametersRequest {
+        parameters_json,
+    };
+    client_ref
+        .set_parameters(request)
+        .await
+        .map_err(|e| format!("Failed to set parameters: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_config(
+    db_client: tauri::State<'_, SharedClient>,
+    assistant: String,
+) -> Result<String, String> {
+    // Get a mutable reference to the QueryClient from the shared state
+    let mut client_guard = db_client.lock().await;
+    let db_client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Create the QueryRequest
+    let request = super_builder::GetClientConfigRequest {
+        assistant,
+    };
+
+    // Perform the gRPC query
+    let response = db_client_ref
+        .get_client_config(request)
+        .await
+        .map_err(|e| format!("Failed to query database: {}", e))?;
+
+    // Extract the message from the QueryReply
+    let reply = response.into_inner();
+    Ok(reply.data)
+}
+
+#[tauri::command]
+pub async fn get_chat_history(
+    client: tauri::State<'_, SharedClient>,
+) -> Result<String, String> {
+    // Get a mutable reference to the QueryClient from the shared state
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Create the QueryRequest
+    let request = super_builder::GetChatHistoryRequest {};
+
+    // Perform the gRPC query
+    let response = client_ref
+        .get_chat_history(request)
+        .await
+        .map_err(|e| format!("Failed to query database: {}", e))?;
+
+    // Extract the message from the QueryReply
+    let reply = response.into_inner();
+    Ok(reply.data)
+}
+
+#[tauri::command]
+pub async fn remove_session(
+    client: tauri::State<'_, SharedClient>,
+    sid: i32, // int32 required for GRPC
+) -> Result<bool, String> {
+    // Get a mutable reference to the QueryClient from the shared state
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Create the QueryRequest
+    let request = super_builder::RemoveSessionRequest {
+        session_id: sid,
+    };
+
+    // Perform the gRPC query
+    let response = client_ref
+        .remove_session(request)
+        .await
+        .map_err(|e| format!("Failed to query database: {}", e))?;
+
+    // Extract the message from the QueryReply
+    let reply = response.into_inner();
+    Ok(reply.success)
+}
+
+#[tauri::command]
+pub async fn set_session_name(
+    client: tauri::State<'_, SharedClient>,
+    sid: i32, // int32 required for GRPC
+    name: String,
+) -> Result<bool, String> {
+    // Get a mutable reference to the QueryClient from the shared state
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    
+    // Create the QueryRequest
+    let request = super_builder::SetSessionNameRequest {
+        session_id: sid,
+        session_name: name,
+    };
+
+    // Perform the gRPC query
+    let response = client_ref
+        .set_session_name(request)
+        .await
+        .map_err(|e| format!("Failed to query database: {}", e))?;
+
+    // Extract the message from the QueryReply
+    let reply = response.into_inner();
+    Ok(reply.success)
+}
+
+// #[derive(Deserialize)]
+// struct UpdateManifest {
+//     configxml: String,
+//     configtype: String, // "type" is a reserved word in Rust, so we escape it with `r#`.
+// }
+
+
+#[tauri::command]
+pub async fn update_notification(ntf_client: State<'_, SharedClient>) -> Result<String, String> {
+    // Lock the Mutex and ensure the client is mutable
+    let mut client_guard = ntf_client.lock().await;
+    let ntf_client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::SayHelloRequest {
+        name: "Update".to_string(),
+    };
+
+    let response = ntf_client_ref
+        .get_software_update(request)
+        .await
+        .map_err(|e| format!("Failed to connect: {}", e))?;
+
+    // Extract the actual UpdateReply message from the tonic::Response
+    let reply = response.into_inner();
+    // let data: Vec<HashMap<String, Value>> = serde_json::from_str(&reply.message).unwrap();
+
+    // println!("update: {:?}", reply.message);
+
+    // let modified_json_str = serde_json::to_string_pretty(&data).unwrap();
+    // Ok(modified_json_str)
+    Ok(reply.message)
+}
+
+#[tauri::command]
+pub async fn set_models(client: tauri::State<'_, SharedClient>, llm: String, embedder: String, ranker: String) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    let path_buf = PathBuf::from("C:\\ProgramData\\IntelAIA\\local_models");
+    let llm_path = path_buf.join(llm).to_string_lossy().to_string();
+    let embedder_path = path_buf.join(embedder).to_string_lossy().to_string();
+    let ranker_path = path_buf.join(ranker).to_string_lossy().to_string();
+
+    let request = super_builder::SetModelsRequest {
+        llm: Some(llm_path),
+        embedder: Some(embedder_path),
+        ranker: Some(ranker_path),
+    };
+
+    let response = client_ref.set_models(request).await.map_err(|e| format!("Failed to connect: {}", e))?;
+    let reply = response.into_inner();
+    println!("set_models {:?}", reply);
+
+    Ok(reply.models_loaded)
+}
+
+#[derive(Serialize, Deserialize)]
+struct LlmModel {
+    short_name: Option<String>,
+    full_name: String,
+    model_type: String,
+    download_link: Option<String>,
+    model_card: Option<String>,
+    commit_id: Option<String>,
+}
+
+
+#[tauri::command]
+pub async fn update_db_models(client: State<'_, SharedClient>, assistant: String, models_json: String) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let db_client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    /* 
+    let mut models_list: Vec<LlmModel> = serde_json::from_str(&models_json).map_err(|e| format!("Failed to parse models JSON: {}", e))?;
+
+    for model in &mut models_list {
+        model.model_origin = "UserSelected".to_string();
+    }
+
+    let updated_models_json = serde_json::to_string(&models_list).map_err(|e| format!("Failed to serialize updated models: {}", e))?;*/
+
+    let request = super_builder::SetActiveAssistantRequest {
+        assistant: assistant.into(),
+        models_json: models_json.into(),
+    };
+
+    let response = db_client_ref.set_active_assistant(request).await.map_err(|e| format!("Failed to query database: {}", e))?;
+
+    if response.into_inner().success {
+        println!("Assistant set successfully.");
+    }
+
+    Ok("Assistant set successfully.".to_string())
+}
+
+#[tauri::command]
+pub async fn convert_model(client: tauri::State<'_, SharedClient>, model_path: String, parameters:Option<String>) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let db_client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::ConvertModelRequest{
+        model_path: model_path.into(),
+        parameters: parameters.into(),
+    };
+
+    let response = db_client_ref.convert_model(request).await.map_err(|e| format!("Failed to convert model: {}", e))?;
+
+    let reply = response.into_inner();
+
+    if reply.message == "" {
+        Ok(reply.message)
+    } else {
+        Err(reply.message.into())
+    }
+}
+
+#[tauri::command]
+pub async fn upload_model(client: tauri::State<'_, SharedClient>, source_dir: String, model: String, model_type:String, move_directory:Option<bool>, download_link:Option<String>) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let db_client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+    // Create the SetActiveAssistantRequest
+    let request = super_builder::UploadModelRequest{
+        source_dir: source_dir.into(),
+        model: model.into(),
+        model_type: model_type.into(),
+        move_directory: move_directory.unwrap_or(false),
+        download_link: download_link.unwrap_or_else(|| "".to_string()),
+    };
+
+    let response = db_client_ref.upload_model(request).await.map_err(|e| format!("Failed to upload model: {}", e))?;
+
+    let reply = response.into_inner();
+
+    if reply.message == "Already exists" {
+        Err("*Error, duplicate folder name. Please use a unique folder name*".into())
+    } else {
+        Ok(reply.message)
+    }
+}
+
+#[tauri::command]
+pub async fn set_assistant_view_model(
+    client: State<'_, SharedClient>,
+    vm: String, //MW defined serialized AssistantViewModel object
+    reset_ux_settings: Option<bool>,
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::SetAssistantViewModelRequest {
+        view_model: vm,
+        reset_ux_settings: reset_ux_settings.unwrap_or(false),
+    };
+
+    let response = client_ref
+        .set_assistant_view_model(request)
+        .await
+        .map_err(|e| format!("Failed to set assistant viewmodel: {}", e))?;
+
+    let reply = response.into_inner();
+    if reply.message == "success" {
+        Ok(reply.message)
+    } else {
+        Err(reply.message.into())
+    }
+}
+
+#[tauri::command]
+pub async fn set_user_config_view_model(
+    client: State<'_, SharedClient>,
+    vm: String, //MW defined serialized UserConfigViewModel object
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::SetUserConfigViewModelRequest {
+        view_model: vm,
+    };
+
+    let response = client_ref
+        .set_user_config_view_model(request)
+        .await
+        .map_err(|e| format!("Failed to set userconfig viewmodel: {}", e))?;
+
+    let reply = response.into_inner();
+
+    Ok(reply.message)
+}
+
+#[tauri::command]
+pub async fn export_user_config(
+    client: State<'_, SharedClient>,
+    assistant_name: String,
+    export_path: String,
+) -> Result<String, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::ExportUserConfigRequest {
+        assistant_name,
+        export_path,
+    };
+
+    let response = client_ref
+        .export_user_config(request)
+        .await
+        .map_err(|e| format!("Failed to export user config: {}", e))?;
+
+    let reply = response.into_inner();
+    if reply.success {
+        Ok(reply.message) //Exported Filename
+    } else {
+        Err(reply.message) //Error message.
+    }
+}
+
+#[tauri::command]
+pub async fn import_user_config(
+    client: State<'_, SharedClient>,
+    import_path: String,
+) -> Result<bool, String> {
+    let mut client_guard = client.lock().await;
+    let client_ref = client_guard.as_mut().ok_or("Client not initialized")?;
+
+    let request = super_builder::ImportUserConfigRequest {
+        import_path
+    };
+
+    let response = client_ref
+        .import_user_config(request)
+        .await
+        .map_err(|e| format!("Failed to import user config: {}", e))?;
+
+    let reply = response.into_inner();
+    if reply.success {
+        Ok(true)
+    } else {
+        Err(reply.message)
+    }
+}

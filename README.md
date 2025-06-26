@@ -13,6 +13,7 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
   - [Software requirements](#software-requirements)
 - [Getting started](#getting-started)
 - [What's included](#whats-included)
+  - [Source code](#source-code)
   - [Sample code](#sample-code)
   - [SuperBuilder Service API Guide](#superbuilder-service-api-guide)
 - [LLM Model List and Recommended Models](#llm-model-list-and-recommended-models)
@@ -90,6 +91,12 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 
 ### What's included
 ***
+
+#### Source code
+Inside `src` folder you can find our released source code. 
+
+Currently we have our UI code released to public. Please follow our [UI source code instruction](src/superbuilderclient/README.md).
+
 #### Sample code
   This folder contains a sample application created using the SuperBuilder API service. We included sample projects built from `dotnet` , `Python` and `Go`. 
 
