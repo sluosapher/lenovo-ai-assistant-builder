@@ -7,32 +7,33 @@ import { FileManagementContext } from "../context/FileManagementContext";
 import { ChatContext } from "../context/ChatContext";
 import { useContext } from "react";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useTranslation } from 'react-i18next';
 import useDataStore from "../../stores/DataStore";
 
 const DragAndDrop = () => {
-  const { config} = useDataStore();
+  const { config } = useDataStore();
   const [isDragAndDropVisible, setDragAndDropIsVisible] = useState(true);
   const [FilePaths, setFiles] = useState([]);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const { uploadFiles, uploadFolders, fileResponse, fileStatus, lastModifiedFiles, validExtensions, displayFileError, cancelFileUpload } = useContext(FileManagementContext);
   let unlistenFileDrop, unlistenFileDropHover, unlistenFileDropCancelled;
-  const {isChatReady } = useContext(ChatContext);
-  const [componentVisibility,setComponentVisibility] = useState(false);
+  const { isChatReady } = useContext(ChatContext);
+  const [componentVisibility, setComponentVisibility] = useState(false);
 
   const { t } = useTranslation();
 
   // reference for useEffect to access current state of context
-  const isChatReadyRef = useRef(isChatReady); 
+  const isChatReadyRef = useRef(isChatReady);
   useEffect(() => {
     isChatReadyRef.current = isChatReady;
   }, [isChatReady]);
 
   useEffect(() => {
     setComponentVisibility(config.is_admin);
-  },[config])
+  }, [config])
 
   const toggleDragAndDropVisibility = () =>
     setDragAndDropIsVisible(!isDragAndDropVisible);
@@ -53,7 +54,7 @@ const DragAndDrop = () => {
           console.log("Not ready for drag and drop yet.");
           displayFileError();
         }
-        
+
       });
 
       unlistenFileDropCancelled = listen(
@@ -90,24 +91,23 @@ const DragAndDrop = () => {
   useEffect(() => {
     console.log("FilePaths stored: ", FilePaths);
   }, [FilePaths]);
-  
-  if(!componentVisibility) {
+
+  if (!componentVisibility) {
     return null;
   }
   return (
     <div className="drag-n-drop-container">
       <div onClick={toggleDragAndDropVisibility} className="instructions">
         <div
-          className={`dragAndDropVisibility ${
-            isDragAndDropVisible ? "" : "rotated"
-          }`}
+          className={`dragAndDropVisibility ${isDragAndDropVisible ? "" : "rotated"
+            }`}
         />
         <span className="medium-text large-font">{t('draganddrop.title')}</span>
         <span className="light-text">
           {" "}
           {t('draganddrop.subtitle')}
           {" "}
-          </span>
+        </span>
       </div>
       {isDragAndDropVisible && (
         <div className="drag-drop-area">
@@ -124,18 +124,18 @@ const DragAndDrop = () => {
             </p>
           </div>
 
-          
+
           <div className="drag-and-drop-status dragndrop-small-text error">
             {(fileStatus === "completed") && (
               <p className="dragndrop-small-text">{fileResponse}</p>
             )}
-            {(fileStatus === "uploading" || fileStatus === "removing" || 
+            {(fileStatus === "uploading" || fileStatus === "removing" ||
               fileStatus === "stopping" || fileStatus === "start-uploading") && (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
+                <div className="loading-container">
+                  <div className="loading-spinner"></div>
                   <p className="dragndrop-small-text">{fileResponse}</p>
-                </div>  
-            )}
+                </div>
+              )}
             {(fileStatus === "uploaded" || fileStatus === "removed") && (
               <div className="completed-container">
                 <p style={{ marginBottom: "5px" }}>{fileResponse}</p>
@@ -151,49 +151,51 @@ const DragAndDrop = () => {
               </div>
             )}
           </div>
-         
-          
-          <div className="drag-and-drop-buttons">
-              {(fileStatus === "uploading") ? (
-                <Button
-                  className="cancel-upload"
-                  onClick={handleCancelButtonClick}
-                  startIcon={<CancelIcon />}
-                >
-                  Cancel
-                </Button>
-              ) : (
-                <div className="add-buttons-group">
-                  <Button
-                    className="add-files"
-                    onClick={handleFileButtonClick}
-                    startIcon={<AddCircleIcon />}
-                    disabled={!isChatReady}
-                  >
-                    {t('draganddrop.button.fiels')}
-                  </Button>
-                  <Button
-                    className="add-folders"
-                    onClick={handleFolderButtonClick}
-                    startIcon={<AddCircleIcon />}
-                    disabled={!isChatReady}
-                  >
-                    {t('draganddrop.button.folders')}
-                  </Button>
-                </div>
-              )
-              
-              }
-            
 
-            <button className="manage-files" onClick={openLibrary}>
-              <img
-                src="/images/dragndrop/normal_u162.svg"
-                alt="Manage Icon"
-                className="manage-files-img"
-              />
+
+          <div className="drag-and-drop-buttons">
+            {(fileStatus === "uploading") ? (
+              <Button
+                className="cancel-upload"
+                onClick={handleCancelButtonClick}
+                startIcon={<CancelIcon />}
+              >
+                Cancel
+              </Button>
+            ) : (
+              <div className="add-buttons-group">
+                <Button
+                  className="add-files"
+                  variant="contained"
+                  onClick={handleFileButtonClick}
+                  startIcon={<AddCircleIcon />}
+                  disabled={!isChatReady}
+                >
+                  {t('draganddrop.button.fiels')}
+                </Button>
+                <Button
+                  className="add-folders"
+                  variant="contained"
+                  onClick={handleFolderButtonClick}
+                  startIcon={<AddCircleIcon />}
+                  disabled={!isChatReady}
+                >
+                  {t('draganddrop.button.folders')}
+                </Button>
+              </div>
+            )
+
+            }
+
+
+            <Button
+              className="manage-files"
+              variant="contained"
+              onClick={openLibrary}
+              startIcon={<EditNoteIcon />}
+              disabled={!isChatReady}>
               <span>{t('draganddrop.button.manage')}</span>
-            </button>
+            </Button>
             <FileManagement
               isOpen={isLibraryOpen}
               onClose={closeLibrary}
