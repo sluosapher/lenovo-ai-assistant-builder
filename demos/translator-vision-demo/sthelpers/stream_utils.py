@@ -11,7 +11,8 @@ import helpers.mw as mw
 GRPC_ADDRESS = 'localhost:5006'
 
 DEFAULT_VLM = "Phi-3.5-vision-instruct-int4-ov"
-DEFAULT_LLM ="Qwen2-7B-Instruct-int4-ov"
+# DEFAULT_LLM ="Qwen2-7B-Instruct-int4-ov"
+DEFAULT_LLM = 'Qwen2.5-7B-Instruct-int4-ov'
 
 LOADING_GIF=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loading_animation.gif'))
 

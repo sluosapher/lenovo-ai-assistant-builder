@@ -25,10 +25,8 @@ channel = None
 active_model = None
 
 ACTION_BUTTON_NAME='Run Analysis'
-# DEFAULT_PROMPT = "Review the image and assign up to 3 category labels to it"
-DEFAULT_PROMPT = "Review the receipt image and extract every line of the transaction details. Do not miss anything. Provide the information in a structured format."
-
-DEFAULT_RECEIPT_SCAN_PROMPT = "Review the receipt image and extract every line of the transaction details. Do not miss anything. Provide the information in a structured format."
+DEFAULT_PROMPT = "Summarize the image"
+DEFAULT_RECEIPT_SCAN_PROMPT = "Review the receipt image and extract transaction details. Provide the information in a nice format."
 DEFAULT_IMG_LABEL_PROMPT = "Review the image and assign up to 3 category labels to it"
 
 ST_LOADING_HTML = sthelpers.get_loading_gif()
