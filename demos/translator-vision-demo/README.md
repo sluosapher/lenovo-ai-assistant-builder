@@ -9,6 +9,7 @@ It supports image upload, vision model inference (receipt scanning, image labeli
 ## Prerequisites
 
  - Intel AI Assistant Builder v1.2.1 or above
+ - You have Qwen2.5-7B-Instruct-int4-ov and Phi-3.5-vision-instruct-int4-ov downloaded using AI Assistant Builder
 ---
 
 
