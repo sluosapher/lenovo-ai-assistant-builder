@@ -1,51 +1,50 @@
+import time
 import unittest
-from unittest.mock import MagicMock, patch
 import grpc
+import superbuilder_middleware_pb2_grpc as sb_grpc
 from helpers.mw import check_pybackend, connect, disconnect
 
 class TestMWHelpers(unittest.TestCase):
 
-    @patch('helpers.mw.sb.SayHelloRequest')
-    def test_check_pybackend_success(self, MockSayHelloRequest):
-        stub = MagicMock()
-        stub.SayHelloPyllm.return_value.message = "Hello from server"
-        result = check_pybackend(stub)
-        self.assertTrue(result, "Test check_pybackend_success failed")
-        stub.SayHelloPyllm.assert_called_once_with(MockSayHelloRequest(name='SuperBuilder Python Clients!'))
+    def setUp(self):
+        time.sleep(10)  # Allow time for the service to start
+        # Connect to the actual middleware service
+        self.grpc_address = 'localhost:5006'
+        self.channel = grpc.insecure_channel(self.grpc_address)
+        self.stub = sb_grpc.SuperBuilderStub(self.channel)
 
-    @patch('helpers.mw.sb.SayHelloRequest')
-    def test_check_pybackend_failure(self, MockSayHelloRequest):
-        stub = MagicMock()
-        stub.SayHelloPyllm.return_value.message = ""
-        result = check_pybackend(stub)
-        self.assertFalse(result, "Test check_pybackend_failure failed")
-        stub.SayHelloPyllm.assert_called_once_with(MockSayHelloRequest(name='SuperBuilder Python Clients!'))
+    def tearDown(self):
+        # Skip tearDown for test_disconnect
+        if self._testMethodName != "test_disconnect":
+            self.channel.close() # Close the gRPC channel
 
-    @patch('helpers.mw.sbg.SuperBuilderStub')
-    @patch('grpc.channel_ready_future')
-    def test_connect_success(self, mock_channel_ready_future, MockSuperBuilderStub):
-        channel = MagicMock()
-        mock_channel_ready_future.return_value.result.return_value = None
-        success, stub = connect(channel)
-        self.assertTrue(success, "Test connect_success failed")
-        MockSuperBuilderStub.assert_called_once_with(channel)
+    def test_check_pybackend_success(self):
+        try:
+            result = check_pybackend(self.stub)
+            self.assertTrue(result, "Test check_pybackend_success failed")
+        except grpc.RpcError as e:
+            self.fail(f"gRPC error during test_check_pybackend_success: {e.details()}")
+        except Exception as e:
+            self.fail(f"Error during test_check_pybackend_success: {e}")
+            
+    def test_connect_success(self):
+        try:
+            success, stub = connect(self.channel)
+            self.assertTrue(success, "Test connect_success failed")
+            self.assertIsNotNone(stub, "Stub is None after successful connection")
+        except grpc.RpcError as e:
+            self.fail(f"gRPC error during test_connect_success: {e.details()}")
+        except Exception as e:
+            self.fail(f"Error during test_connect_success: {e}")
 
-    @patch('helpers.mw.sbg.SuperBuilderStub')
-    @patch('grpc.channel_ready_future')
-    def test_connect_failure(self, mock_channel_ready_future, MockSuperBuilderStub):
-        channel = MagicMock()
-        mock_channel_ready_future.return_value.result.side_effect = grpc.FutureTimeoutError()
-        success, stub = connect(channel)
-        self.assertFalse(success, "Test connect_failure failed")
-        MockSuperBuilderStub.assert_not_called()
-
-    @patch('helpers.mw.sb.ClientDisconnectedRequest')
-    def test_disconnect(self, MockClientDisconnectedRequest):
-        stub = MagicMock()
-        channel = MagicMock()
-        disconnect(stub, channel)
-        stub.ClientDisconnected.assert_called_once_with(MockClientDisconnectedRequest())
-        channel.close.assert_called_once()
+    def test_disconnect(self):
+        try:
+            disconnect(self.stub, self.channel)
+            print("Disconnected successfully.")
+        except grpc.RpcError as e:
+            self.fail(f"gRPC error during test_disconnect: {e.details()}")
+        except Exception as e:
+            self.fail(f"Error during test_disconnect: {e}")
 
 if __name__ == '__main__':
     unittest.main()

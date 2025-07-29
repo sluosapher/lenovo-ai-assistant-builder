@@ -8,6 +8,7 @@ import helpers.mw as mw
 import helpers.chat as chat
 
 from examples.chat_examples import simple_chat, simple_chat_w_rag, simple_chat_w_image_query
+from examples.functional_example import set_max_token_parameter
 from examples.client_examples import switch_model
 
 # Unset proxy environment variables
@@ -36,7 +37,7 @@ def run_examples():
     complete = False
 
     print("\n========================================")
-    actionInput = "Select which example to run:\n1. Execute simple chat\n2. Execute simple chat with Knowledge Base\n3. Execute Image Query\n\n0. Exit\n\nEnter number: "
+    actionInput = "Select which example to run:\n1. Execute simple chat\n2. Execute simple chat with Knowledge Base\n3. Execute Image Query\n4. Set max_token parameter value\n\n0. Exit\n\nEnter number: "
     option = input(actionInput).strip().lower()
     if option == "0":
         print("Exiting...")
@@ -52,6 +53,10 @@ def run_examples():
     elif option == "3":
         print("Executing image query example...")
         simple_chat_w_image_query(stub)
+        complete = True
+    elif option == "4":
+        print("Setting max_token parameter value...")
+        set_max_token_parameter(stub)
         complete = True
     ## This option is not available as getting 'ERROR: Access to the path 'UDDC0C1.tmp' is denied.'
     # elif option == "4":

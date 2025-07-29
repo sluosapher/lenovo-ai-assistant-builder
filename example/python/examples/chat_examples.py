@@ -6,10 +6,9 @@ sys.path.append(os.path.abspath(os.path.join(SCRIPT_DIR,'..')))
 
 import helpers.chat as chat
 import helpers.rag as rag
-import helpers.parameters as param
 
 def simple_chat(stub):
-    try:     
+    try:
         prompt = "Who are you"
 
         session_id = chat.init_chat_session(stub)

@@ -90,12 +90,18 @@ def list_uploaded_files(stub):
     
     Args:
         stub: The gRPC stub for making requests.
+
+    Returns:
+        list: A list of uploaded files if successful
     """
     request = sb.GetFileListRequest(fileType="")
     try:
         response = stub.GetFileList(request)
+        uploaded_filepaths = []
         print("Uploaded Files:")
         for file in json.loads(response.fileList):
+            uploaded_filepaths.append(file[0])
             print(file)
+        return uploaded_filepaths
     except grpc.RpcError as e:
         print(f"Failed to list uploaded files: {e.details()}")

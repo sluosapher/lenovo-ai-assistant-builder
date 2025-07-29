@@ -94,8 +94,9 @@ def get_chat_response(response_iterator, verbose=True):
     if verbose:
         print("Response:")
     for jsonResponse in response_iterator:
-        responseObj = json.loads(jsonResponse.message)
-        response = responseObj.get('message', "")
+        # responseObj = json.loads(jsonResponse.message)
+        # response = responseObj.get('message', "")
+        response = jsonResponse.message
         if verbose:
             print(response, end='', flush=True)
         entireResponse += response

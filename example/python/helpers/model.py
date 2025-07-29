@@ -26,3 +26,14 @@ def switch(stub, local_model_path, model_name):
         return f"Local folder for model '{model_name}' does not exist."
     response = stub.SetModels(sb.SetModelsRequest(assistant=model_name))
     return response.message
+
+
+DEFAULT_MODEL_PATH="C:\\ProgramData\\IntelAIA\\local_models"
+DEFAULT_EMBEDDER = "bge-base-en-v1.5-int8-ov"
+DEFAULT_RERANKER = "bge-reranker-base-int8-ov"
+
+def set_model(stub, model_name):
+    response = stub.SetModels(sb.SetModelsRequest(llm= os.path.join(DEFAULT_MODEL_PATH, model_name), 
+                                                  embedder=os.path.join(DEFAULT_MODEL_PATH, DEFAULT_EMBEDDER),
+                                                  ranker=os.path.join(DEFAULT_MODEL_PATH, DEFAULT_RERANKER)))
+    return response
