@@ -90,11 +90,15 @@ async def convert_markdown_file_to_mindmap(
         if not markdown_file.suffix == '.md':
             raise RuntimeError(f"File is not a Markdown file: {markdown_file}")
         
-        command_to_run = f"markmap.ps1 {markdown_file} --no-open"
-        args = ['powershell.exe', '-Command', command_to_run ]
-        command = " ".join(args)
-
-        process = subprocess.run(command, capture_output=True, text=True, shell=True)
+        process = subprocess.run(
+            [
+                "powershell.exe",
+                "-Command",
+                f'markmap.ps1 "{str(markdown_file)}" --no-open'
+            ],
+            capture_output=True,
+            text=True
+        )
         output_file: Path = Path(str(markdown_file).replace(".md", ".html"))
         
         if process.returncode != 0:
