@@ -70,6 +70,9 @@ var chatRequest = new ChatRequest
 {
     Name = "SuperBuilder C# Client!",
     Prompt = "What were we just talking about?",
+    QueryType = "{\"name\":\"\"}",
+    AttachedFiles = "[]",
+    SessionId = new Random().Next(1, 9999)
 };
 // add in some chat history
 chatRequest.History.Add(new ConversationHistory { Role = "user", Content = "Tell me a bit about yourself" });
@@ -83,10 +86,7 @@ try
     await foreach (var response in r.ResponseStream.ReadAllAsync())
     {
         Console.WriteLine("Received chat message: " + response.Message);
-        // convert response.Message to json
-        var messageDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Message);
-        messageDict.TryGetValue("message", out var messageValue);
-        fullResponse += messageValue;
+        fullResponse += response.Message;
     }
 }
 catch (Exception ex)

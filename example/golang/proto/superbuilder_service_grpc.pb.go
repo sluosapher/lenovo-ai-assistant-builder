@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: superbuilder_middleware.proto
+// source: superbuilder_service.proto
 
 package SuperBuilderWinService
 
@@ -48,6 +48,22 @@ const (
 	SuperBuilder_UploadModel_FullMethodName            = "/SuperBuilder.SuperBuilder/UploadModel"
 	SuperBuilder_ExportUserConfig_FullMethodName       = "/SuperBuilder.SuperBuilder/ExportUserConfig"
 	SuperBuilder_ImportUserConfig_FullMethodName       = "/SuperBuilder.SuperBuilder/ImportUserConfig"
+	SuperBuilder_RemoveModel_FullMethodName            = "/SuperBuilder.SuperBuilder/RemoveModel"
+	SuperBuilder_GetMCPAgents_FullMethodName           = "/SuperBuilder.SuperBuilder/GetMCPAgents"
+	SuperBuilder_GetActiveMCPAgents_FullMethodName     = "/SuperBuilder.SuperBuilder/GetActiveMCPAgents"
+	SuperBuilder_AddMCPAgent_FullMethodName            = "/SuperBuilder.SuperBuilder/AddMCPAgent"
+	SuperBuilder_EditMCPAgent_FullMethodName           = "/SuperBuilder.SuperBuilder/EditMCPAgent"
+	SuperBuilder_RemoveMCPAgent_FullMethodName         = "/SuperBuilder.SuperBuilder/RemoveMCPAgent"
+	SuperBuilder_StartMCPAgent_FullMethodName          = "/SuperBuilder.SuperBuilder/StartMCPAgent"
+	SuperBuilder_StopMCPAgent_FullMethodName           = "/SuperBuilder.SuperBuilder/StopMCPAgent"
+	SuperBuilder_GetMCPServers_FullMethodName          = "/SuperBuilder.SuperBuilder/GetMCPServers"
+	SuperBuilder_GetActiveMCPServers_FullMethodName    = "/SuperBuilder.SuperBuilder/GetActiveMCPServers"
+	SuperBuilder_AddMCPServer_FullMethodName           = "/SuperBuilder.SuperBuilder/AddMCPServer"
+	SuperBuilder_EditMCPServer_FullMethodName          = "/SuperBuilder.SuperBuilder/EditMCPServer"
+	SuperBuilder_RemoveMCPServer_FullMethodName        = "/SuperBuilder.SuperBuilder/RemoveMCPServer"
+	SuperBuilder_StartMCPServer_FullMethodName         = "/SuperBuilder.SuperBuilder/StartMCPServer"
+	SuperBuilder_StopMCPServer_FullMethodName          = "/SuperBuilder.SuperBuilder/StopMCPServer"
+	SuperBuilder_GetMCPServerTools_FullMethodName      = "/SuperBuilder.SuperBuilder/GetMCPServerTools"
 )
 
 // SuperBuilderClient is the client API for SuperBuilder service.
@@ -110,6 +126,24 @@ type SuperBuilderClient interface {
 	UploadModel(ctx context.Context, in *UploadModelRequest, opts ...grpc.CallOption) (*UploadModelResponse, error)
 	ExportUserConfig(ctx context.Context, in *ExportUserConfigRequest, opts ...grpc.CallOption) (*ExportUserConfigResponse, error)
 	ImportUserConfig(ctx context.Context, in *ImportUserConfigRequest, opts ...grpc.CallOption) (*ImportUserConfigResponse, error)
+	RemoveModel(ctx context.Context, in *RemoveModelRequest, opts ...grpc.CallOption) (*RemoveModelResponse, error)
+	// MCP Agent RPCs
+	GetMCPAgents(ctx context.Context, in *GetMCPAgentsRequest, opts ...grpc.CallOption) (*GetMCPAgentsResponse, error)
+	GetActiveMCPAgents(ctx context.Context, in *GetActiveMCPAgentsRequest, opts ...grpc.CallOption) (*GetActiveMCPAgentsResponse, error)
+	AddMCPAgent(ctx context.Context, in *AddMCPAgentRequest, opts ...grpc.CallOption) (*AddMCPAgentResponse, error)
+	EditMCPAgent(ctx context.Context, in *EditMCPAgentRequest, opts ...grpc.CallOption) (*EditMCPAgentResponse, error)
+	RemoveMCPAgent(ctx context.Context, in *RemoveMCPAgentRequest, opts ...grpc.CallOption) (*RemoveMCPAgentResponse, error)
+	StartMCPAgent(ctx context.Context, in *StartMCPAgentRequest, opts ...grpc.CallOption) (*StartMCPAgentResponse, error)
+	StopMCPAgent(ctx context.Context, in *StopMCPAgentRequest, opts ...grpc.CallOption) (*StopMCPAgentResponse, error)
+	// MCP Server RPCs
+	GetMCPServers(ctx context.Context, in *GetMCPServersRequest, opts ...grpc.CallOption) (*GetMCPServersResponse, error)
+	GetActiveMCPServers(ctx context.Context, in *GetActiveMCPServersRequest, opts ...grpc.CallOption) (*GetActiveMCPServersResponse, error)
+	AddMCPServer(ctx context.Context, in *AddMCPServerRequest, opts ...grpc.CallOption) (*AddMCPServerResponse, error)
+	EditMCPServer(ctx context.Context, in *EditMCPServerRequest, opts ...grpc.CallOption) (*EditMCPServerResponse, error)
+	RemoveMCPServer(ctx context.Context, in *RemoveMCPServerRequest, opts ...grpc.CallOption) (*RemoveMCPServerResponse, error)
+	StartMCPServer(ctx context.Context, in *StartMCPServerRequest, opts ...grpc.CallOption) (*StartMCPServerResponse, error)
+	StopMCPServer(ctx context.Context, in *StopMCPServerRequest, opts ...grpc.CallOption) (*StopMCPServerResponse, error)
+	GetMCPServerTools(ctx context.Context, in *GetMCPServerToolsRequest, opts ...grpc.CallOption) (*GetMCPServerToolsResponse, error)
 }
 
 type superBuilderClient struct {
@@ -437,6 +471,166 @@ func (c *superBuilderClient) ImportUserConfig(ctx context.Context, in *ImportUse
 	return out, nil
 }
 
+func (c *superBuilderClient) RemoveModel(ctx context.Context, in *RemoveModelRequest, opts ...grpc.CallOption) (*RemoveModelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveModelResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_RemoveModel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) GetMCPAgents(ctx context.Context, in *GetMCPAgentsRequest, opts ...grpc.CallOption) (*GetMCPAgentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMCPAgentsResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_GetMCPAgents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) GetActiveMCPAgents(ctx context.Context, in *GetActiveMCPAgentsRequest, opts ...grpc.CallOption) (*GetActiveMCPAgentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetActiveMCPAgentsResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_GetActiveMCPAgents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) AddMCPAgent(ctx context.Context, in *AddMCPAgentRequest, opts ...grpc.CallOption) (*AddMCPAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddMCPAgentResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_AddMCPAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) EditMCPAgent(ctx context.Context, in *EditMCPAgentRequest, opts ...grpc.CallOption) (*EditMCPAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EditMCPAgentResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_EditMCPAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) RemoveMCPAgent(ctx context.Context, in *RemoveMCPAgentRequest, opts ...grpc.CallOption) (*RemoveMCPAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveMCPAgentResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_RemoveMCPAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) StartMCPAgent(ctx context.Context, in *StartMCPAgentRequest, opts ...grpc.CallOption) (*StartMCPAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StartMCPAgentResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_StartMCPAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) StopMCPAgent(ctx context.Context, in *StopMCPAgentRequest, opts ...grpc.CallOption) (*StopMCPAgentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StopMCPAgentResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_StopMCPAgent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) GetMCPServers(ctx context.Context, in *GetMCPServersRequest, opts ...grpc.CallOption) (*GetMCPServersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMCPServersResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_GetMCPServers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) GetActiveMCPServers(ctx context.Context, in *GetActiveMCPServersRequest, opts ...grpc.CallOption) (*GetActiveMCPServersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetActiveMCPServersResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_GetActiveMCPServers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) AddMCPServer(ctx context.Context, in *AddMCPServerRequest, opts ...grpc.CallOption) (*AddMCPServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddMCPServerResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_AddMCPServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) EditMCPServer(ctx context.Context, in *EditMCPServerRequest, opts ...grpc.CallOption) (*EditMCPServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EditMCPServerResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_EditMCPServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) RemoveMCPServer(ctx context.Context, in *RemoveMCPServerRequest, opts ...grpc.CallOption) (*RemoveMCPServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveMCPServerResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_RemoveMCPServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) StartMCPServer(ctx context.Context, in *StartMCPServerRequest, opts ...grpc.CallOption) (*StartMCPServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StartMCPServerResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_StartMCPServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) StopMCPServer(ctx context.Context, in *StopMCPServerRequest, opts ...grpc.CallOption) (*StopMCPServerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StopMCPServerResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_StopMCPServer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) GetMCPServerTools(ctx context.Context, in *GetMCPServerToolsRequest, opts ...grpc.CallOption) (*GetMCPServerToolsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMCPServerToolsResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_GetMCPServerTools_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SuperBuilderServer is the server API for SuperBuilder service.
 // All implementations must embed UnimplementedSuperBuilderServer
 // for forward compatibility.
@@ -497,6 +691,24 @@ type SuperBuilderServer interface {
 	UploadModel(context.Context, *UploadModelRequest) (*UploadModelResponse, error)
 	ExportUserConfig(context.Context, *ExportUserConfigRequest) (*ExportUserConfigResponse, error)
 	ImportUserConfig(context.Context, *ImportUserConfigRequest) (*ImportUserConfigResponse, error)
+	RemoveModel(context.Context, *RemoveModelRequest) (*RemoveModelResponse, error)
+	// MCP Agent RPCs
+	GetMCPAgents(context.Context, *GetMCPAgentsRequest) (*GetMCPAgentsResponse, error)
+	GetActiveMCPAgents(context.Context, *GetActiveMCPAgentsRequest) (*GetActiveMCPAgentsResponse, error)
+	AddMCPAgent(context.Context, *AddMCPAgentRequest) (*AddMCPAgentResponse, error)
+	EditMCPAgent(context.Context, *EditMCPAgentRequest) (*EditMCPAgentResponse, error)
+	RemoveMCPAgent(context.Context, *RemoveMCPAgentRequest) (*RemoveMCPAgentResponse, error)
+	StartMCPAgent(context.Context, *StartMCPAgentRequest) (*StartMCPAgentResponse, error)
+	StopMCPAgent(context.Context, *StopMCPAgentRequest) (*StopMCPAgentResponse, error)
+	// MCP Server RPCs
+	GetMCPServers(context.Context, *GetMCPServersRequest) (*GetMCPServersResponse, error)
+	GetActiveMCPServers(context.Context, *GetActiveMCPServersRequest) (*GetActiveMCPServersResponse, error)
+	AddMCPServer(context.Context, *AddMCPServerRequest) (*AddMCPServerResponse, error)
+	EditMCPServer(context.Context, *EditMCPServerRequest) (*EditMCPServerResponse, error)
+	RemoveMCPServer(context.Context, *RemoveMCPServerRequest) (*RemoveMCPServerResponse, error)
+	StartMCPServer(context.Context, *StartMCPServerRequest) (*StartMCPServerResponse, error)
+	StopMCPServer(context.Context, *StopMCPServerRequest) (*StopMCPServerResponse, error)
+	GetMCPServerTools(context.Context, *GetMCPServerToolsRequest) (*GetMCPServerToolsResponse, error)
 	mustEmbedUnimplementedSuperBuilderServer()
 }
 
@@ -593,6 +805,54 @@ func (UnimplementedSuperBuilderServer) ExportUserConfig(context.Context, *Export
 }
 func (UnimplementedSuperBuilderServer) ImportUserConfig(context.Context, *ImportUserConfigRequest) (*ImportUserConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ImportUserConfig not implemented")
+}
+func (UnimplementedSuperBuilderServer) RemoveModel(context.Context, *RemoveModelRequest) (*RemoveModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveModel not implemented")
+}
+func (UnimplementedSuperBuilderServer) GetMCPAgents(context.Context, *GetMCPAgentsRequest) (*GetMCPAgentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMCPAgents not implemented")
+}
+func (UnimplementedSuperBuilderServer) GetActiveMCPAgents(context.Context, *GetActiveMCPAgentsRequest) (*GetActiveMCPAgentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveMCPAgents not implemented")
+}
+func (UnimplementedSuperBuilderServer) AddMCPAgent(context.Context, *AddMCPAgentRequest) (*AddMCPAgentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMCPAgent not implemented")
+}
+func (UnimplementedSuperBuilderServer) EditMCPAgent(context.Context, *EditMCPAgentRequest) (*EditMCPAgentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditMCPAgent not implemented")
+}
+func (UnimplementedSuperBuilderServer) RemoveMCPAgent(context.Context, *RemoveMCPAgentRequest) (*RemoveMCPAgentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveMCPAgent not implemented")
+}
+func (UnimplementedSuperBuilderServer) StartMCPAgent(context.Context, *StartMCPAgentRequest) (*StartMCPAgentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartMCPAgent not implemented")
+}
+func (UnimplementedSuperBuilderServer) StopMCPAgent(context.Context, *StopMCPAgentRequest) (*StopMCPAgentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopMCPAgent not implemented")
+}
+func (UnimplementedSuperBuilderServer) GetMCPServers(context.Context, *GetMCPServersRequest) (*GetMCPServersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMCPServers not implemented")
+}
+func (UnimplementedSuperBuilderServer) GetActiveMCPServers(context.Context, *GetActiveMCPServersRequest) (*GetActiveMCPServersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveMCPServers not implemented")
+}
+func (UnimplementedSuperBuilderServer) AddMCPServer(context.Context, *AddMCPServerRequest) (*AddMCPServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMCPServer not implemented")
+}
+func (UnimplementedSuperBuilderServer) EditMCPServer(context.Context, *EditMCPServerRequest) (*EditMCPServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditMCPServer not implemented")
+}
+func (UnimplementedSuperBuilderServer) RemoveMCPServer(context.Context, *RemoveMCPServerRequest) (*RemoveMCPServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveMCPServer not implemented")
+}
+func (UnimplementedSuperBuilderServer) StartMCPServer(context.Context, *StartMCPServerRequest) (*StartMCPServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartMCPServer not implemented")
+}
+func (UnimplementedSuperBuilderServer) StopMCPServer(context.Context, *StopMCPServerRequest) (*StopMCPServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopMCPServer not implemented")
+}
+func (UnimplementedSuperBuilderServer) GetMCPServerTools(context.Context, *GetMCPServerToolsRequest) (*GetMCPServerToolsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMCPServerTools not implemented")
 }
 func (UnimplementedSuperBuilderServer) mustEmbedUnimplementedSuperBuilderServer() {}
 func (UnimplementedSuperBuilderServer) testEmbeddedByValue()                      {}
@@ -1116,6 +1376,294 @@ func _SuperBuilder_ImportUserConfig_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SuperBuilder_RemoveModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveModelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).RemoveModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_RemoveModel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).RemoveModel(ctx, req.(*RemoveModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_GetMCPAgents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMCPAgentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).GetMCPAgents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_GetMCPAgents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).GetMCPAgents(ctx, req.(*GetMCPAgentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_GetActiveMCPAgents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveMCPAgentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).GetActiveMCPAgents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_GetActiveMCPAgents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).GetActiveMCPAgents(ctx, req.(*GetActiveMCPAgentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_AddMCPAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMCPAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).AddMCPAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_AddMCPAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).AddMCPAgent(ctx, req.(*AddMCPAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_EditMCPAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditMCPAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).EditMCPAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_EditMCPAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).EditMCPAgent(ctx, req.(*EditMCPAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_RemoveMCPAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveMCPAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).RemoveMCPAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_RemoveMCPAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).RemoveMCPAgent(ctx, req.(*RemoveMCPAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_StartMCPAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartMCPAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).StartMCPAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_StartMCPAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).StartMCPAgent(ctx, req.(*StartMCPAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_StopMCPAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopMCPAgentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).StopMCPAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_StopMCPAgent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).StopMCPAgent(ctx, req.(*StopMCPAgentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_GetMCPServers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMCPServersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).GetMCPServers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_GetMCPServers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).GetMCPServers(ctx, req.(*GetMCPServersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_GetActiveMCPServers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveMCPServersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).GetActiveMCPServers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_GetActiveMCPServers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).GetActiveMCPServers(ctx, req.(*GetActiveMCPServersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_AddMCPServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMCPServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).AddMCPServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_AddMCPServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).AddMCPServer(ctx, req.(*AddMCPServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_EditMCPServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditMCPServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).EditMCPServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_EditMCPServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).EditMCPServer(ctx, req.(*EditMCPServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_RemoveMCPServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveMCPServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).RemoveMCPServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_RemoveMCPServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).RemoveMCPServer(ctx, req.(*RemoveMCPServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_StartMCPServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartMCPServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).StartMCPServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_StartMCPServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).StartMCPServer(ctx, req.(*StartMCPServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_StopMCPServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopMCPServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).StopMCPServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_StopMCPServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).StopMCPServer(ctx, req.(*StopMCPServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_GetMCPServerTools_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMCPServerToolsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).GetMCPServerTools(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_GetMCPServerTools_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).GetMCPServerTools(ctx, req.(*GetMCPServerToolsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SuperBuilder_ServiceDesc is the grpc.ServiceDesc for SuperBuilder service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1227,6 +1775,70 @@ var SuperBuilder_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ImportUserConfig",
 			Handler:    _SuperBuilder_ImportUserConfig_Handler,
 		},
+		{
+			MethodName: "RemoveModel",
+			Handler:    _SuperBuilder_RemoveModel_Handler,
+		},
+		{
+			MethodName: "GetMCPAgents",
+			Handler:    _SuperBuilder_GetMCPAgents_Handler,
+		},
+		{
+			MethodName: "GetActiveMCPAgents",
+			Handler:    _SuperBuilder_GetActiveMCPAgents_Handler,
+		},
+		{
+			MethodName: "AddMCPAgent",
+			Handler:    _SuperBuilder_AddMCPAgent_Handler,
+		},
+		{
+			MethodName: "EditMCPAgent",
+			Handler:    _SuperBuilder_EditMCPAgent_Handler,
+		},
+		{
+			MethodName: "RemoveMCPAgent",
+			Handler:    _SuperBuilder_RemoveMCPAgent_Handler,
+		},
+		{
+			MethodName: "StartMCPAgent",
+			Handler:    _SuperBuilder_StartMCPAgent_Handler,
+		},
+		{
+			MethodName: "StopMCPAgent",
+			Handler:    _SuperBuilder_StopMCPAgent_Handler,
+		},
+		{
+			MethodName: "GetMCPServers",
+			Handler:    _SuperBuilder_GetMCPServers_Handler,
+		},
+		{
+			MethodName: "GetActiveMCPServers",
+			Handler:    _SuperBuilder_GetActiveMCPServers_Handler,
+		},
+		{
+			MethodName: "AddMCPServer",
+			Handler:    _SuperBuilder_AddMCPServer_Handler,
+		},
+		{
+			MethodName: "EditMCPServer",
+			Handler:    _SuperBuilder_EditMCPServer_Handler,
+		},
+		{
+			MethodName: "RemoveMCPServer",
+			Handler:    _SuperBuilder_RemoveMCPServer_Handler,
+		},
+		{
+			MethodName: "StartMCPServer",
+			Handler:    _SuperBuilder_StartMCPServer_Handler,
+		},
+		{
+			MethodName: "StopMCPServer",
+			Handler:    _SuperBuilder_StopMCPServer_Handler,
+		},
+		{
+			MethodName: "GetMCPServerTools",
+			Handler:    _SuperBuilder_GetMCPServerTools_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -1245,5 +1857,5 @@ var SuperBuilder_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "superbuilder_middleware.proto",
+	Metadata: "superbuilder_service.proto",
 }
