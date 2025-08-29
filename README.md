@@ -139,22 +139,22 @@ You may also **upload your own model** or **convert models from Hugging Face dir
 
 ### Features
 *** 
- * **Local LLM and RAG chat**: Build a local knowledge base using your documentation (various file formats are supported).
- * **Configurable Parameters and Settings**: Numerous parameters can be adjusted to tune LLM and RAG models, ingestion, retrieval, reranking processes, and application operations.
- * **Special Query Functions**: Focus the assistant on specialized workflows to extend capability and maximize accuracy for specific tasks. Available special functions include:
-   - **Super Agent (MCP)**: Routes queries through MCP services providing unlimited capability using any number of MCP servers and configured MCP agents
-   - **Analyze Tables**: Analyze files with tabular format where the first row contains column headers and remaining rows contain data
-   - **Summarize**: Generate summaries of files and enable follow-up questions based on the summary
-   - **Query Image**: Extract text, generate captions, and perform other vision tasks (requires a vision model)
-   - **Evaluate Resumes**: Assess resume strength against job descriptions with follow-up analysis capabilities
-   - **Score Documents**: Score unstructured documents against custom scoring criteria
- * **Agentic Workflow Examples**: The "Super Agent (MCP)" and "Resume Match" functions demonstrate how capabilities can be extended to support real-world use cases that matter to your organization.
- * **Model Management**: Easily switch between models, upload a model, or convert a model to take advantage of the latest LLM optimizations and capabilities.
- * **UI customization**: Use the "Appearance" adjustments in Settings to easily customize the interface to fit your needs. 
- * **Profile Management**: Import and export Assistant profiles/configurations for backup, profile switching, and sharing.
- * **Localization Support**: Partial localization is available for Simplified Chinese (zh-Hans) and Traditional Chinese (zh-Hant). 
- * **Admin Mode**: Switch between "Admin" mode with full access to settings, and "User" mode where settings are hidden to preserve admin configurations while users focus on chatting with the Assistant.
- * **API Services**: Expose all features through SuperBuilder API services.
+ * **Local LLM and RAG chat**: Build a local knowledge base from your documentation (multiple file formats supported).
+ * **Configurable Parameters**: Tune LLM and RAG models, ingestion, retrieval, reranking, and application operations.
+ * **Special Query Functions**: Specialized workflows for specific tasks:
+   - **Super Agent (MCP)**: Route queries through MCP services with unlimited capability
+   - **Analyze Tables**: Process tabular data files
+   - **Summarize**: Generate file summaries with follow-up Q&A
+   - **Query Image**: Extract text, generate captions, and vision tasks (requires vision model)
+   - **Evaluate Resumes**: Score resumes against job descriptions
+   - **Score Documents**: Rate documents against custom criteria
+ * **Agentic Workflow Examples**: "Super Agent (MCP)" and "Resume Match" demonstrate real-world capability extensions.
+ * **Model Management**: Switch, upload, or convert models for latest optimizations.
+ * **UI Customization**: Customize interface appearance via Settings.
+ * **Profile Management**: Import/export configurations for backup and sharing.
+ * **Localization**: Simplified and Traditional Chinese support.
+ * **Admin Mode**: Toggle between full admin access and simplified user interface.
+ * **API Services**: Access all features through SuperBuilder APIs.
    
 <br>
 
@@ -174,7 +174,24 @@ For comprehensive troubleshooting guidance, installation tips, and a complete li
 ### Release Notes
 ***
 #### Version 2.0.0
+- Introducing MCP Support
+We’ve added Model Control Protocol (MCP) support, enabling seamless import/export of MCP servers and agents, improved error handling, and enhanced UI/UX for managing workflows. This lays the foundation for more flexible agent-based orchestration and integration with external systems.
 
+- Introducing New OVMS Backend
+A new OpenVINO Model Server (OVMS) backend has been integrated into the system. This provides better scalability, cache handling for NPU/GPU models, and improved process management. It ensures more efficient model loading and execution, especially for large-scale workloads.
+
+- Introducing Support for New Models
+This release expands compatibility with Qwen3 (now the recommended model), and new NPU model configurations. These additions broaden the model ecosystem and improve flexibility for different use cases.
+
+- New Workflows UI
+A Custom Workflows UI has been introduced, providing users with more intuitive control over query flows, agent behaviors, and task automation. Enhancements include reusable components, better active file management, clickable references, and clear visual cues to differentiate current vs. recommended models. The MW and Backend APIs have been updated to improve clarity and simplify integrations.
+
+- Improved Summarization & OOM Handling
+Summarization has been significantly upgraded to include more context with multi-level and direct keyword-focused modes.
+Overflow token and stop-chat handling fixes have been added to address out-of-memory (OOM) errors.
+
+- Bug Fixes
+This release addresses a wide range of issues, including CSV encoding errors, security vulnerabilities and regressions caused by dependency upgrades. These fixes collectively improve reliability and user experience across the platform.
 
 #### Previous Release Notes
 
