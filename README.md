@@ -81,7 +81,7 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 ![webportal](media/webportal_border.png)
 
 - #### Using SuperBuilder
-Please refer to the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) to learn basic usage and special workflows.
+Please refer to the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) for detailed instructions. See the "Getting Started" section to learn basic usage and the "Special Query Types" section to learn about special workflows.
 
 <br>
 
@@ -107,37 +107,29 @@ To get started with the UI source code, refer to the [UI development guide](src/
 
 ### LLM Model List and Recommended Models
 ***
-<p align="justify">Intel® AI Assistant Builder supports most LLM models enabled by <strong>Intel® OpenVINO Model Server</strong>. Model recommendations are made based on the assistant type and system hardware, using the performance and accurancy data collected inside our lab.</p> 
+<p align="justify">Intel® AI Assistant Builder supports most LLM models enabled by <strong>Intel® OpenVINO Model Server</strong>. Model recommendations are made based on the assistant type and system hardware, using the performance and accuracy data collected inside our lab.</p> 
 
 As of version `v2.0.0`, the following models are available for selection:
 
 - **Chat Models**
-  ```
-  * Qwen2.5-7B-Instruct-int4-ov
-  * Qwen3-8B-int4-ov
-  * Phi-4-mini-instruct-int4-ov
-  * Phi-3.5-vision-instruct-int4-ov
-  * DeepSeek-R1-Distill-Qwen-7B-int4-ov
-  * zephyr-7b-beta-int4-ov
-  * BioMistral-7B-SLERP-int4
-  * Phi3.5-mini-instruct-int4-cw-op-npu
-  ```
+  - Qwen3-8B-int4-ov
+  - Qwen2.5-7B-Instruct-int4-ov
+  - Phi-4-mini-instruct-int4-ov
+  - DeepSeek-R1-Distill-Qwen-7B-int4-ov
+  - zephyr-7b-beta-int4-ov
+  - BioMistral-7B-SLERP-int4
 
 - **Vision Models**
-  ```  
-  * Phi-3.5-vision-instruct-int4-ov
-  ```
+  - Phi-3.5-vision-instruct-int4-ov
+
   
 - **RAG Models**
-  ``` 
-  * bge-base-en-v1.5-int8-ov
-  * bge-reranker-base-int8-ov
-  ``` 
+  - bge-base-en-v1.5-int8-ov
+  - bge-reranker-base-int8-ov
 
 - **NPU Models**
-  ``` 
-  * Phi3.5-mini-instruct-int4-cw-op-npu
-  ``` 
+  - Phi3.5-mini-instruct-int4-cw-op-npu
+
 
 You may also **upload your own model** or **convert models from Hugging Face directly** using the provided "Model Upload" or "Model Conversion" capabilities. Please consult the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) for full details on these features.
 
@@ -175,39 +167,16 @@ You may also **upload your own model** or **convert models from Hugging Face dir
 
 ### Tips, Troubleshooting, Known Issues
 ***
-> [!IMPORTANT]
->* **Installation Issues**: Some antivirus software such as McAfee Antivirus software is known to interfere with the installation process of Intel® AI Assistant Builder on Windows systems. If you encounter installation problems and have antivirus installed, please stop the real-time scanning feature and then reinstall Intel® AI Assistant Builder. Once the installation is done and the models are loaded, you can re-enable it. Users might experience performance impacts when antivirus real-time scanning is running.
+For comprehensive troubleshooting guidance, installation tips, and a complete list of known issues, please refer to the **"Troubleshooting and Known Issues"** section in the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf).
 
-> [!WARNING]
->* **Model Download Errors**: This issue could be due to a few reasons: 
->    - **HTTP/HTTPS Proxy for Enterprise Environments**: If you are an enterprise user and your organization uses an HTTP or HTTPS proxy, you need to configure it on your AI PC to enable the Intel® AI Assistant Builder to download LLMs, RAG, and other necessary components. Please consult your organization’s IT department to determine which proxy server(s) are in use and how to configure them up on your device.
->    - **Model Download Endpoint**: Check your model download endpoint and consider selecting a different download server.
->      - **For users in the PRC**, ***Model Scope*** is recommended.
->      - **For users in other regions**, please choose the ***Hugging Face***.
->* **Export Config Issues**: For configurations involving a large set of documents, only a partial set of text chunks is currently exported. Support for exporting a full set is currently under development.
->* **NPU model limitation**: The NPU model is supported only on ***Lunar Lake*** systems.
-
-> [!CAUTION]
->* **Initial load time / Unresponsive**: When the AI assistant is started, the assistant service and models must be initialized before the assistant can be used. During this time, the chat text entry field will be disabled, and a status message at the bottom of the window will indicate what is happening. When the AI assistant is ready, the status bar at the bottom of the window will be removed and the chat text entry will be enabled.
-> ![A close-up of a red and grey rectangle AI-generated content may be incorrect.](media/notification_border.png)
->* **Model Loading Errors**: If a “model loading error” occurs, please make sure to update the GPU and NPU drivers to the latest version. The NPU model requires NPU Driver **32.0.100.3714 at a minimum**.
->* **Backend Not Ready**: When running the Intel® AI Assistant Builder for the first time a "backend not ready" condition may occur, especially when there is a slow network connection.  Please re-start the application and if possible move to a location which has a better network connection.
->* **Upgrade Errors**: If you are upgrading from ```v1.1.0``` to ```v1.2.0```, the installer might have issues removing all your selected local files. If you wish to remove everything, we recommend fully uninstalling the application using Window's built-in _Add or Remove Programs_, and then installing ```v1.2.0```.
->* **Model Conversion Error**: The model conversion tool within the Intel® AI Assistant Builder supports models compatible with the **Intel® OpenVINO** platform. Not all models are supported. <br> 
-Some models on Hugging Face require user consent before they can be downloaded. Our application cannot proceed with the download until you consent to the Hugging Face model terms.
->* **Query Tabular Data Issue**: Query Tabular Data will fail to process XLSX files having `time` format. A fix for this will be included in the next release.
->* **Conversation History - Reset to Defaults Issue**: Although the `Reset to Defaults` button sets the `Conversation History` to 0, the conversation history is still utilized in the context. To resolve this issue, please manually adjust the value using the slider.
->* **Intermittent Qwen2 and Qwen2.5 Models Issue**: The Qwen2 and Qwen2.5 models have a known intermittent issue where they occasionally generate unwanted responses with exclamation marks. This behavior is not consistently reproducible, but retrying the query typically resolves the problem.
->* **White Title Bar Issue:** When upgrading from an older version to v1.2.0, you might see a white title bar at the top.  Go to *Settings > Appearance* and click the "Reset" button to correct this. If you want to keep your existing style, make sure to export the configuration (*Settings > Export/Import Configuration > Export*) before resetting the appearance.
-> ![Model Tools](media/white_title_bar.png)
-
-> [!TIP]
->* **Multiple Assistants Support**: Users can use our Import and Export functions to try out multiple assistant profiles on the same local AI PC. 
 <br>
-
 
 ### Release Notes
 ***
+#### Version 2.0.0
+
+
+#### Previous Release Notes
 
 #### Version 1.2.1
 - Service Only Installer
@@ -229,8 +198,6 @@ Partial localization is available for Simplified Chinese (zh-Hans) and Tradition
 
 - Admin Mode
 Switch between a simple chatbot interface for "standard" users and an "Admin" interface with comprehensive configuration options. This enables administrators to configure, preview, and evaluate the end-user experience.
-
-#### Previous Release Notes
 
 ##### Version 1.1
 
