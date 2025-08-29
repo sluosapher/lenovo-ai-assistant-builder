@@ -111,22 +111,20 @@ Currently we have our UI code released to public. Please follow our [UI source c
 
 ### LLM Model List and Recommended Models
 ***
-<p align="justify">Intel® AI Assistant Builder supports most LLM models enabled by <strong>Intel® OpenVINO</strong>. Model recommendations are made based on the assistant type and system hardware, using the performance and accurancy data collected inside our lab.</p> 
+<p align="justify">Intel® AI Assistant Builder supports most LLM models enabled by <strong>Intel® OpenVINO Model Server</strong>. Model recommendations are made based on the assistant type and system hardware, using the performance and accurancy data collected inside our lab.</p> 
 
-As of version `v1.2.X`, the following models are available for selection:
+As of version `v2.0.0`, the following models are available for selection:
 
 - **Chat Models**
   ```
-  * Phi-4-mini-instruct-int4-ov
   * Qwen2.5-7B-Instruct-int4-ov
+  * Qwen3-8B-int4-ov
+  * Phi-4-mini-instruct-int4-ov
+  * Phi-3.5-vision-instruct-int4-ov
   * DeepSeek-R1-Distill-Qwen-7B-int4-ov
-  * BioMistral-7B-SLERP-int4
-  * Qwen2-7B-Instruct-int4-ov
-  * Phi-3-mini-128k-instruct-int4-ov
-  * Phi-3-mini-4k-instruct-int4-ov
-  * neural-chat-7b-v3-3-int4-ov
-  * notus-7b-v1-int4-ov
   * zephyr-7b-beta-int4-ov
+  * BioMistral-7B-SLERP-int4
+  * Phi3.5-mini-instruct-int4-cw-op-npu
   ```
 
 - **Vision Models**
@@ -142,7 +140,7 @@ As of version `v1.2.X`, the following models are available for selection:
 
 - **NPU Models**
   ``` 
-  * phi-3-mini-2k-int4_sym_g128-npu
+  * Phi3.5-mini-instruct-int4-cw-op-npu
   ``` 
 
 You may also **upload your own model** or **convert models from Hugging Face directly** using the provided "Model Upload" or "Model Conversion" capabilities. Please consult the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) for full details on these features.
