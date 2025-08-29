@@ -34,7 +34,7 @@ const (
 	SuperBuilder_SetModels_FullMethodName              = "/SuperBuilder.SuperBuilder/SetModels"
 	SuperBuilder_UnloadModels_FullMethodName           = "/SuperBuilder.SuperBuilder/UnloadModels"
 	SuperBuilder_SetParameters_FullMethodName          = "/SuperBuilder.SuperBuilder/SetParameters"
-	SuperBuilder_ClientDisconnected_FullMethodName     = "/SuperBuilder.SuperBuilder/ClientDisconnected"
+	SuperBuilder_DisconnectClient_FullMethodName       = "/SuperBuilder.SuperBuilder/DisconnectClient"
 	SuperBuilder_GetClientConfig_FullMethodName        = "/SuperBuilder.SuperBuilder/GetClientConfig"
 	SuperBuilder_GetChatHistory_FullMethodName         = "/SuperBuilder.SuperBuilder/GetChatHistory"
 	SuperBuilder_GetSoftwareUpdate_FullMethodName      = "/SuperBuilder.SuperBuilder/GetSoftwareUpdate"
@@ -45,6 +45,7 @@ const (
 	SuperBuilder_SetAssistantViewModel_FullMethodName  = "/SuperBuilder.SuperBuilder/SetAssistantViewModel"
 	SuperBuilder_SetUserConfigViewModel_FullMethodName = "/SuperBuilder.SuperBuilder/SetUserConfigViewModel"
 	SuperBuilder_ConvertModel_FullMethodName           = "/SuperBuilder.SuperBuilder/ConvertModel"
+	SuperBuilder_ValidateModel_FullMethodName          = "/SuperBuilder.SuperBuilder/ValidateModel"
 	SuperBuilder_UploadModel_FullMethodName            = "/SuperBuilder.SuperBuilder/UploadModel"
 	SuperBuilder_ExportUserConfig_FullMethodName       = "/SuperBuilder.SuperBuilder/ExportUserConfig"
 	SuperBuilder_ImportUserConfig_FullMethodName       = "/SuperBuilder.SuperBuilder/ImportUserConfig"
@@ -84,7 +85,7 @@ type SuperBuilderClient interface {
 	LoadModels(ctx context.Context, in *LoadModelsRequest, opts ...grpc.CallOption) (*LoadModelsResponse, error)
 	// Check on health status backend system / service (for example: RAG check)
 	CheckHealth(ctx context.Context, in *CheckHealthRequest, opts ...grpc.CallOption) (*CheckHealthResponse, error)
-	// Give LLM feedback on a question's response to improve future responses
+	// Vector store user feedback to improve future responses
 	AddFeedback(ctx context.Context, in *AddFeedbackRequest, opts ...grpc.CallOption) (*AddFeedbackResponse, error)
 	// Upload a list of files to the RAG module to be vector stored, stream the upload progress
 	AddFiles(ctx context.Context, in *AddFilesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AddFilesResponse], error)
@@ -102,8 +103,8 @@ type SuperBuilderClient interface {
 	UnloadModels(ctx context.Context, in *UnloadModelsRequest, opts ...grpc.CallOption) (*UnloadModelsResponse, error)
 	// Change the RAG, LLM, and backend parameters
 	SetParameters(ctx context.Context, in *SetParametersRequest, opts ...grpc.CallOption) (*SetParametersResponse, error)
-	// Inform the server that the client has disconnected
-	ClientDisconnected(ctx context.Context, in *ClientDisconnectedRequest, opts ...grpc.CallOption) (*ClientDisconnectedResponse, error)
+	// Inform the server that the client has disconnected to stop the backend service provider
+	DisconnectClient(ctx context.Context, in *DisconnectClientRequest, opts ...grpc.CallOption) (*DisconnectClientResponse, error)
 	// Get config info from middleware
 	GetClientConfig(ctx context.Context, in *GetClientConfigRequest, opts ...grpc.CallOption) (*GetClientConfigResponse, error)
 	// Get chat history messages from middleware
@@ -123,6 +124,7 @@ type SuperBuilderClient interface {
 	// Using UserConfigViewModel, sets sqlite database userconfig jsonappsettings to the corresponding fields.
 	SetUserConfigViewModel(ctx context.Context, in *SetUserConfigViewModelRequest, opts ...grpc.CallOption) (*SetUserConfigViewModelResponse, error)
 	ConvertModel(ctx context.Context, in *ConvertModelRequest, opts ...grpc.CallOption) (*ConvertModelResponse, error)
+	ValidateModel(ctx context.Context, in *ValidateModelRequest, opts ...grpc.CallOption) (*ValidateModelResponse, error)
 	UploadModel(ctx context.Context, in *UploadModelRequest, opts ...grpc.CallOption) (*UploadModelResponse, error)
 	ExportUserConfig(ctx context.Context, in *ExportUserConfigRequest, opts ...grpc.CallOption) (*ExportUserConfigResponse, error)
 	ImportUserConfig(ctx context.Context, in *ImportUserConfigRequest, opts ...grpc.CallOption) (*ImportUserConfigResponse, error)
@@ -331,10 +333,10 @@ func (c *superBuilderClient) SetParameters(ctx context.Context, in *SetParameter
 	return out, nil
 }
 
-func (c *superBuilderClient) ClientDisconnected(ctx context.Context, in *ClientDisconnectedRequest, opts ...grpc.CallOption) (*ClientDisconnectedResponse, error) {
+func (c *superBuilderClient) DisconnectClient(ctx context.Context, in *DisconnectClientRequest, opts ...grpc.CallOption) (*DisconnectClientResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ClientDisconnectedResponse)
-	err := c.cc.Invoke(ctx, SuperBuilder_ClientDisconnected_FullMethodName, in, out, cOpts...)
+	out := new(DisconnectClientResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_DisconnectClient_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -435,6 +437,16 @@ func (c *superBuilderClient) ConvertModel(ctx context.Context, in *ConvertModelR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ConvertModelResponse)
 	err := c.cc.Invoke(ctx, SuperBuilder_ConvertModel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *superBuilderClient) ValidateModel(ctx context.Context, in *ValidateModelRequest, opts ...grpc.CallOption) (*ValidateModelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ValidateModelResponse)
+	err := c.cc.Invoke(ctx, SuperBuilder_ValidateModel_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -649,7 +661,7 @@ type SuperBuilderServer interface {
 	LoadModels(context.Context, *LoadModelsRequest) (*LoadModelsResponse, error)
 	// Check on health status backend system / service (for example: RAG check)
 	CheckHealth(context.Context, *CheckHealthRequest) (*CheckHealthResponse, error)
-	// Give LLM feedback on a question's response to improve future responses
+	// Vector store user feedback to improve future responses
 	AddFeedback(context.Context, *AddFeedbackRequest) (*AddFeedbackResponse, error)
 	// Upload a list of files to the RAG module to be vector stored, stream the upload progress
 	AddFiles(*AddFilesRequest, grpc.ServerStreamingServer[AddFilesResponse]) error
@@ -667,8 +679,8 @@ type SuperBuilderServer interface {
 	UnloadModels(context.Context, *UnloadModelsRequest) (*UnloadModelsResponse, error)
 	// Change the RAG, LLM, and backend parameters
 	SetParameters(context.Context, *SetParametersRequest) (*SetParametersResponse, error)
-	// Inform the server that the client has disconnected
-	ClientDisconnected(context.Context, *ClientDisconnectedRequest) (*ClientDisconnectedResponse, error)
+	// Inform the server that the client has disconnected to stop the backend service provider
+	DisconnectClient(context.Context, *DisconnectClientRequest) (*DisconnectClientResponse, error)
 	// Get config info from middleware
 	GetClientConfig(context.Context, *GetClientConfigRequest) (*GetClientConfigResponse, error)
 	// Get chat history messages from middleware
@@ -688,6 +700,7 @@ type SuperBuilderServer interface {
 	// Using UserConfigViewModel, sets sqlite database userconfig jsonappsettings to the corresponding fields.
 	SetUserConfigViewModel(context.Context, *SetUserConfigViewModelRequest) (*SetUserConfigViewModelResponse, error)
 	ConvertModel(context.Context, *ConvertModelRequest) (*ConvertModelResponse, error)
+	ValidateModel(context.Context, *ValidateModelRequest) (*ValidateModelResponse, error)
 	UploadModel(context.Context, *UploadModelRequest) (*UploadModelResponse, error)
 	ExportUserConfig(context.Context, *ExportUserConfigRequest) (*ExportUserConfigResponse, error)
 	ImportUserConfig(context.Context, *ImportUserConfigRequest) (*ImportUserConfigResponse, error)
@@ -764,8 +777,8 @@ func (UnimplementedSuperBuilderServer) UnloadModels(context.Context, *UnloadMode
 func (UnimplementedSuperBuilderServer) SetParameters(context.Context, *SetParametersRequest) (*SetParametersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetParameters not implemented")
 }
-func (UnimplementedSuperBuilderServer) ClientDisconnected(context.Context, *ClientDisconnectedRequest) (*ClientDisconnectedResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ClientDisconnected not implemented")
+func (UnimplementedSuperBuilderServer) DisconnectClient(context.Context, *DisconnectClientRequest) (*DisconnectClientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisconnectClient not implemented")
 }
 func (UnimplementedSuperBuilderServer) GetClientConfig(context.Context, *GetClientConfigRequest) (*GetClientConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetClientConfig not implemented")
@@ -796,6 +809,9 @@ func (UnimplementedSuperBuilderServer) SetUserConfigViewModel(context.Context, *
 }
 func (UnimplementedSuperBuilderServer) ConvertModel(context.Context, *ConvertModelRequest) (*ConvertModelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertModel not implemented")
+}
+func (UnimplementedSuperBuilderServer) ValidateModel(context.Context, *ValidateModelRequest) (*ValidateModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateModel not implemented")
 }
 func (UnimplementedSuperBuilderServer) UploadModel(context.Context, *UploadModelRequest) (*UploadModelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadModel not implemented")
@@ -1124,20 +1140,20 @@ func _SuperBuilder_SetParameters_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SuperBuilder_ClientDisconnected_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ClientDisconnectedRequest)
+func _SuperBuilder_DisconnectClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisconnectClientRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SuperBuilderServer).ClientDisconnected(ctx, in)
+		return srv.(SuperBuilderServer).DisconnectClient(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SuperBuilder_ClientDisconnected_FullMethodName,
+		FullMethod: SuperBuilder_DisconnectClient_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SuperBuilderServer).ClientDisconnected(ctx, req.(*ClientDisconnectedRequest))
+		return srv.(SuperBuilderServer).DisconnectClient(ctx, req.(*DisconnectClientRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1318,6 +1334,24 @@ func _SuperBuilder_ConvertModel_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SuperBuilderServer).ConvertModel(ctx, req.(*ConvertModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SuperBuilder_ValidateModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateModelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SuperBuilderServer).ValidateModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SuperBuilder_ValidateModel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SuperBuilderServer).ValidateModel(ctx, req.(*ValidateModelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1720,8 +1754,8 @@ var SuperBuilder_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SuperBuilder_SetParameters_Handler,
 		},
 		{
-			MethodName: "ClientDisconnected",
-			Handler:    _SuperBuilder_ClientDisconnected_Handler,
+			MethodName: "DisconnectClient",
+			Handler:    _SuperBuilder_DisconnectClient_Handler,
 		},
 		{
 			MethodName: "GetClientConfig",
@@ -1762,6 +1796,10 @@ var SuperBuilder_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ConvertModel",
 			Handler:    _SuperBuilder_ConvertModel_Handler,
+		},
+		{
+			MethodName: "ValidateModel",
+			Handler:    _SuperBuilder_ValidateModel_Handler,
 		},
 		{
 			MethodName: "UploadModel",

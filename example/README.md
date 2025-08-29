@@ -61,8 +61,8 @@ Intel® AI Assistant Builder uses GRPC for communication with its services.
 - Intel® AI Assistant Builder Service runs on `localhost:5006`.
 - Intel® AI Assistant Builder Service is named `IntelAiaService.exe`.
 - Intel® AI Assistant Builder Service is registered as a Microsoft Windows service. 
-- All available services are defined in `shared\superbuilder_middleware.proto`.
-- Use the Powershell script `shared\recompile-client-proto.ps1` to regenerate the `pb`/`pb2` files for Golang and Python. 
+- All available services are defined in `proto\superbuilder_middleware.proto`.
+- Use the Powershell script `recompile-client-proto.ps1` to regenerate the `pb`/`pb2` files for Golang and Python. 
 - C# automatically regenerates its `pb`/`pb2` files each time the code is built.
 
 ***

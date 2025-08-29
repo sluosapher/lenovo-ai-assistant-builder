@@ -70,9 +70,6 @@ var chatRequest = new ChatRequest
 {
     Name = "SuperBuilder C# Client!",
     Prompt = "What were we just talking about?",
-    QueryType = "{\"name\":\"\"}",
-    AttachedFiles = "[]",
-    SessionId = new Random().Next(1, 9999)
 };
 // add in some chat history
 chatRequest.History.Add(new ConversationHistory { Role = "user", Content = "Tell me a bit about yourself" });

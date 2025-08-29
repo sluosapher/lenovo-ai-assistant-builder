@@ -147,9 +147,6 @@ func main() {
 	fmt.Println("\n\nexample 6 - chat with the server")
 	fmt.Println("==========")
 
-	var attachedFiles string = "[]"
-	var randomInt int32 = rand.Int31()
-
 	var questions []string = []string{
 		"hi there",
 		"why the sky blue?",
@@ -157,23 +154,9 @@ func main() {
 		"why the tree leaf green?",
 	}
 
-	type QueryType struct {
-		Name string `json:"name"`
-	}
-
-	queryTypeJson, err := json.Marshal(QueryType{Name: ""})
-	if err != nil {
-		log.Fatalf("error marshalling queryType: %v", err)
-	}
-
-	queryTypeJsonString := string(queryTypeJson)
-
 	middlewareChatRequest := middleware.ChatRequest{
-		Name:          "SuperBuilder Go Clients!",
-		Prompt:        questions[rand.Intn(len(questions))],
-		QueryType:     &queryTypeJsonString,
-		SessionId:     randomInt, // random number to identify the session
-		AttachedFiles: &attachedFiles,
+		Name:   "SuperBuilder Go Clients!",
+		Prompt: questions[rand.Intn(len(questions))],
 	}
 
 	fmt.Println("Question:\n", middlewareChatRequest.Prompt)
