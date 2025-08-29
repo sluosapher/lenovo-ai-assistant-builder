@@ -61,7 +61,7 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
   | Network       | Broadband connection for LLMs and other components’ download |                                             |
 > [!NOTE]
 >  * Intel® AI Assistant Builder has been validated on limited Intel AIPC: MTL, LNL, and ARL systems.
-> * Minimum Intel Graphics driver version is **30.0.100.9955**. and minimum NPU driver version is **32.0.100.3714**. 
+> * Minimum Intel Graphics driver version is **30.0.100.9955**. and minimum NPU driver version is **32.0.100.4239**. 
 
 #### Software requirements
   Intel® AI Assistant Builder has been validated for use on **Microsoft Windows 11 version 23H2 or newer**. During the installation process, Intel® AI Assistant Builder application may download and install required components.
@@ -81,11 +81,7 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 ![webportal](media/webportal_border.png)
 
 - #### Using SuperBuilder
-  - [Getting started](basic_usage.md)
-  - [Special Query Functions](special_query.md)
-
-> [!TIP]
-> Please refer to the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) for more details. 
+Please refer to the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) to learn basic usage and special workflows.
 
 <br>
 
@@ -93,9 +89,9 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 ***
 
 #### Source code
-Inside `src` folder you can find our released source code. 
+The `src` folder contains our open-source UI components that power the SuperBuilder application interface. 
 
-Currently we have our UI code released to public. Please follow our [UI source code instruction](src/superbuilderclient/README.md).
+To get started with the UI source code, refer to the [UI development guide](src/superbuilderclient/README.md) for setup instructions and development guidelines.
 
 #### Sample code
   This folder contains a sample application created using the SuperBuilder API service. We included sample projects built from `dotnet` , `Python` and `Go`. 
@@ -153,23 +149,26 @@ You may also **upload your own model** or **convert models from Hugging Face dir
 *** 
  * **Local LLM and RAG chat**: Build a local knowledge base using your documentation (various file formats are supported).
  * **Configurable Parameters and Settings**: Numerous parameters can be adjusted to tune LLM and RAG models, ingestion, retrieval, reranking processes, and application operations.
- * **Special Query Functions**: Focus the assistant on specific functions to extend capability and maximize accuracy and performance.  Special queries include the ability to: Query tabular data, query images, rank resumes against a job description, and more.
- * **Agentic Workflow - Resume Match**: The agentic workflow illustrated in the "Resume Match" function is one example of how capabilities can be extended to support real world use cases that matter to you.
+ * **Special Query Functions**: Focus the assistant on specialized workflows to extend capability and maximize accuracy for specific tasks. Available special functions include:
+   - **Super Agent (MCP)**: Routes queries through MCP services providing unlimited capability using any number of MCP servers and configured MCP agents
+   - **Analyze Tables**: Analyze files with tabular format where the first row contains column headers and remaining rows contain data
+   - **Summarize**: Generate summaries of files and enable follow-up questions based on the summary
+   - **Query Image**: Extract text, generate captions, and perform other vision tasks (requires a vision model)
+   - **Evaluate Resumes**: Assess resume strength against job descriptions with follow-up analysis capabilities
+   - **Score Documents**: Score unstructured documents against custom scoring criteria
+ * **Agentic Workflow Examples**: The "Super Agent (MCP)" and "Resume Match" functions demonstrate how capabilities can be extended to support real-world use cases that matter to your organization.
  * **Model Management**: Easily switch between models, upload a model, or convert a model to take advantage of the latest LLM optimizations and capabilities.
- * **UI customization**: Use the "Appearance" adjustments to easily customize the interface to fit your needs. 
+ * **UI customization**: Use the "Appearance" adjustments in Settings to easily customize the interface to fit your needs. 
  * **Profile Management**: Import and export Assistant profiles/configurations for backup, profile switching, and sharing.
  * **Localization Support**: Partial localization is available for Simplified Chinese (zh-Hans) and Traditional Chinese (zh-Hant). 
- * **Admin Mode**: Enable "Admin" features like adjusting settings and adding documentation to the knowledge base **-OR-** limit features to standard "User" capabilities like asking the Assistant questions.
+ * **Admin Mode**: Switch between "Admin" mode with full access to settings, and "User" mode where settings are hidden to preserve admin configurations while users focus on chatting with the Assistant.
  * **API Services**: Expose all features through SuperBuilder API services.
    
 <br>
 
 :bulb:**Upcoming Features** :sparkles: 
 ***
-
-* **Multi-Agent Orchestration Framework**: Implement AI agents built with MCP (Model Context Protocol) for enhanced coordination.
 * **E2E Enterprise Solution**: Connect your Intel AIPC to edge/server clusters for comprehensive enterprise integration.
-* **SuperBuilder API Service Only Installation Package**: A streamlined API package to create custom UIs and seamlessly integrate SuperBuilder capabilities.
 * **SST and TTS multimodality Features**: Advanced speech synthesis and text-to-speech functionalities for enhanced user interaction and communication.
 
 <br>
