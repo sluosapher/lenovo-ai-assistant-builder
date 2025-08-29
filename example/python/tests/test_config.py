@@ -1,7 +1,7 @@
 import time
 import unittest
 import grpc
-import superbuilder_middleware_pb2_grpc as sb_grpc
+import superbuilder_service_pb2_grpc as sb_grpc
 from helpers.config import get_config, set_config
 
 class TestConfigHelpers(unittest.TestCase):

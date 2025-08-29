@@ -2,7 +2,7 @@ import time
 import unittest
 import os
 import grpc
-import superbuilder_middleware_pb2_grpc as sb_grpc
+import superbuilder_service_pb2_grpc as sb_grpc
 from helpers.rag import is_valid_file_path, upload_file_to_knowledge_base, remove_uploaded_file, list_uploaded_files
 
 class TestRagHelpers(unittest.TestCase):

@@ -1,6 +1,6 @@
 import grpc
-import superbuilder_middleware_pb2 as sb
-import superbuilder_middleware_pb2_grpc as sbg
+import superbuilder_service_pb2 as sb
+import superbuilder_service_pb2_grpc as sbg
 
 def check_pybackend(stub):
     try:
@@ -34,6 +34,6 @@ def connect(channel):
 
 def disconnect(stub, channel):
     if stub is not None:
-        stub.ClientDisconnected(sb.ClientDisconnectedRequest())
+        stub.DisconnectClient(sb.DisconnectClientRequest())
     if channel is not None:
         channel.close()

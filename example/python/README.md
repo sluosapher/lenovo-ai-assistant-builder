@@ -1,30 +1,20 @@
-# Python Client for Intel® AI Assistant Builder Service
-This folder contains a simple Python client designed to communicate with Intel® AI Assistant Builder Service.
+## Python integration example
 
-## Install Dependencies
-- Download and install **[Python 3.12.9](https://www.python.org/downloads/release/python-3129/)**.
-- Use the script `example\python\install.bat` to install necessary dependencies.
-```
-cd path\to\example\python
-install.bat
-```
+* Install latest SuperBuilder
 
-## How to Run 
-- Execute the script `example\python\run.bat` to start the example.
-```
-cd path\to\example\python
-run.bat
-```
+* Install Python 3.12.9 
+https://www.python.org/downloads/release/python-3129/
 
-- Execute the script `example\python\run_tests.bat` to perform tests.
-```
-cd path\to\example\python
-run_tests.bat
-```
+* How to install
+  * Double click on file "install.bat"
 
-## Generate Python Proto File
-- Use the PowerShell script `shared\recompile-client-proto.ps1` to regenerate the `pb`/`pb2` files for Python.
-```
-cd path\to\shared
-.\recompile-client-proto.ps1
-```
+* How to launch
+  * Double click on file "run.bat"
+
+* How to test
+  * Double click on file "run_tests.bat"
+
+
+## Generate python proto file
+`python -m grpc_tools.protoc -I ../../SuperBuilderService/Protos --python_out=. --grpc_python_out=. ../../SuperBuilderService/Protos/greet.proto
+`

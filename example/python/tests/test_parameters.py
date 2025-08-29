@@ -3,7 +3,7 @@ import time
 import unittest
 import grpc
 from unittest.mock import patch
-import superbuilder_middleware_pb2_grpc as sb_grpc
+import superbuilder_service_pb2_grpc as sb_grpc
 from helpers.parameters import set_parameters, init_default_params, set_max_token
 import helpers.config as config
 

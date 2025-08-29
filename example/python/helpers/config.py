@@ -1,6 +1,6 @@
 import grpc
 import json
-import superbuilder_middleware_pb2 as sb
+import superbuilder_service_pb2 as sb
 
 def get_config(stub):
     response = stub.GetClientConfig(sb.GetClientConfigRequest())

@@ -1,7 +1,7 @@
 import time
 import unittest
 import grpc
-import superbuilder_middleware_pb2_grpc as sb_grpc
+import superbuilder_service_pb2_grpc as sb_grpc
 from helpers.chat import warmup, get_chat_history, generate_random_session_id, init_chat_session, set_chat_request, get_chat_response, remove_session
 
 class TestChatHelpers(unittest.TestCase):

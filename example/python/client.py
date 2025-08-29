@@ -7,7 +7,16 @@ import grpc
 import helpers.mw as mw
 import helpers.chat as chat
 
-from examples.chat_examples import simple_chat, simple_chat_w_rag, simple_chat_w_image_query
+from examples.chat_examples import (
+    simple_chat,
+    simple_chat_w_rag_specific_files,
+    simple_chat_w_rag_all_files,
+    simple_chat_w_image_query,
+    workflow_summarize,
+    workflow_query_tables,
+    workflow_score_resumes,
+    workflow_score_documents
+)
 from examples.functional_example import set_max_token_parameter
 from examples.client_examples import switch_model
 
@@ -37,7 +46,17 @@ def run_examples():
     complete = False
 
     print("\n========================================")
-    actionInput = "Select which example to run:\n1. Execute simple chat\n2. Execute simple chat with Knowledge Base\n3. Execute Image Query\n4. Set max_token parameter value\n\n0. Exit\n\nEnter number: "
+    actionInput = ("Select which example to run:\n"
+                  "1. Execute simple chat\n"
+                  "2. Execute simple chat with Knowledge Base (specific files)\n"
+                  "3. Execute simple chat with Knowledge Base (all files)\n"
+                  "4. Execute Image Query\n"
+                  "5. Workflow: Summarize documents\n"
+                  "6. Workflow: Query tables\n"
+                  "7. Workflow: Score resumes\n"
+                  "8. Workflow: Score documents\n"
+                  "9. Set max_token parameter value\n\n"
+                  "0. Exit\n\nEnter number: ")
     option = input(actionInput).strip().lower()
     if option == "0":
         print("Exiting...")
@@ -47,14 +66,34 @@ def run_examples():
         simple_chat(stub)
         complete = True
     elif option == "2":
-        print("Executing simple chat with knowledge base example...")
-        simple_chat_w_rag(stub)
+        print("Executing simple chat with knowledge base (specific files) example...")
+        simple_chat_w_rag_specific_files(stub)
         complete = True
     elif option == "3":
+        print("Executing simple chat with knowledge base (all files) example...")
+        simple_chat_w_rag_all_files(stub)
+        complete = True
+    elif option == "4":
         print("Executing image query example...")
         simple_chat_w_image_query(stub)
         complete = True
-    elif option == "4":
+    elif option == "5":
+        print("Executing workflow: summarize documents...")
+        workflow_summarize(stub)
+        complete = True
+    elif option == "6":
+        print("Executing workflow: query tables...")
+        workflow_query_tables(stub)
+        complete = True
+    elif option == "7":
+        print("Executing workflow: score resumes...")
+        workflow_score_resumes(stub)
+        complete = True
+    elif option == "8":
+        print("Executing workflow: score documents...")
+        workflow_score_documents(stub)
+        complete = True
+    elif option == "9":
         print("Setting max_token parameter value...")
         set_max_token_parameter(stub)
         complete = True

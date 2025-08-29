@@ -2,7 +2,7 @@ import grpc
 import os
 import json
 from tqdm import tqdm
-import superbuilder_middleware_pb2 as sb
+import superbuilder_service_pb2 as sb
 
 def is_valid_file_path(file_path):
     """
@@ -48,10 +48,10 @@ def upload_file_to_knowledge_base(stub, file_paths):
             
             progress_bar.n = int(response.currentFileProgress)
             progress_bar.refresh()
-            if int(response.currentFileProgress) == 100:
-                break
     except grpc.RpcError as e:
         print(f"File upload failed: {e.details()}")
+    finally:
+        progress_bar.close()
 
 def remove_uploaded_file(stub, file_paths):
     """
