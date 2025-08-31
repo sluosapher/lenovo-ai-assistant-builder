@@ -1,11 +1,11 @@
 # Super Agent (MCP) Workflow Guide for Intel AI Assistant Builder
 
-## Getting Started: Adding MCP Servers
-Please refer to the **"Super Agent (MCP)"** section in the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) to learn how to add MCP servers .
+## Getting Started
+Please refer to the **"Super Agent (MCP)"** section in the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) to learn the details about the Intel AI Assistant Builder MCP workflow.
 
-## MCP Server Support
+## Supported MCP Servers
 
-Intel AI Assistant Builder supports wide range of MCP (Model Context Protocol) servers:
+Intel AI Assistant Builder supports a wide range of MCP (Model Context Protocol) servers:
 
 ### 1. Generated MCP Servers (mcp_codegen)
 Custom MCP servers that can be automatically generated using our codegen framework located at [mcp/mcp_codegen](https://github.com/intel/intel-ai-assistant-builder/tree/main/mcp/mcp_codegen). These servers are purpose-built for Intel AI Assistant Builder, offering optimized performance and seamless integration with the platform's capabilities.
@@ -85,7 +85,7 @@ Below are three different methods to install and set up open source MCP servers:
 
 <img src="./images/npx-github.png" alt="npx github" width="50%">
 
-### Troubleshooting Dependencies
+#### Troubleshooting Dependencies
 Intel AI Assistant Builder runs as a Windows Service, which means it uses **System Environment Variables** instead of **User Environment Variables**. If your system is behind a corporate firewall, also add `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` to the System Environment.
 
 **To test if Intel AI Assistant Builder can find your tools:**
@@ -109,7 +109,7 @@ Get-Command node
 
 5. Open a new PowerShell window and repeat steps 1-2 to verify the fix.
 
-### Alternative Solution for Connection Closed Errors
+#### Alternative Solution for Connection Closed Errors
 
 If you're still experiencing "connection closed" issues after following the above steps, you can resolve this by using direct command execution with the proper interpreter prefix.
 
@@ -120,7 +120,7 @@ If you're still experiencing "connection closed" issues after following the abov
 <img src="./images/cmd-github.png" alt="Direct command execution example" width="50%">
 
 
-# MCP Server Demo Videos
+# Demo Videos
 
 Explore our comprehensive video demonstrations to see MCP servers in action. All videos are located in the `media\` folder.
 
@@ -128,26 +128,30 @@ Explore our comprehensive video demonstrations to see MCP servers in action. All
 
 ### 🧳 Business Travel Agent
 **Features:** Flight search and hotel booking with Google Flight and Google Hotel MCP servers  
-**Video:** `media\SuperBuilder_Demo_Business_Travel_MCP_Server.mp4`
+**Video:** `media\SuperBuilder_Demo_Business_Travel_MCP_Server.mp4`  
+**GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_Business_Travel_MCP_Server.mp4)
 
 ### 🕒 Time Zone Agent  
 **Features:** Get current time across different time zones worldwide  
-**Video:** `media\SuperBuilder_Demo_Time_MCP_Server.mp4`
+**Video:** `media\SuperBuilder_Demo_Time_MCP_Server.mp4`  
+**GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_Time_MCP_Server.mp4)
 
 ### 🌐 Website Fetch Agent
 **Features:** Fetch and process website content using the fetch MCP server  
-**Video:** `media\SuperBuilder_Demo_Fetch_Website_MCP_Server.mp4`
+**Video:** `media\SuperBuilder_Demo_Fetch_Website_MCP_Server.mp4`  
+**GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_Fetch_Website_MCP_Server.mp4)
 
 ### 📁 File System Agent
 **Features:** Access and manage your local file system  
-**Video:** `media\SuperBuilder_Demo_File_System_MCP_Server.mp4`
+**Video:** `media\SuperBuilder_Demo_File_System_MCP_Server.mp4`  
+**GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_File_System_MCP_Server.mp4)
 
 
-# Debugging MCP in Intel AI Assistant Builder
+# Debugging Guide
 
-## Method
+## Overview
 
-All MCP call in Intel AI Assistant Builder follows 2 steps. By understanding these steps you will have enough understanding on how to debug MCP in Intel AI Assistant Builder.
+All MCP calls in Intel AI Assistant Builder follow 2 steps. By understanding these steps you will have enough understanding on how to debug MCP in Intel AI Assistant Builder.
 
 ### Step 1 - MCP Agent Call
 Every successful MCP call always start with calling agent. When Agent is called, it's indicated by the phrase `Call: <agent name>`. The most common problem here is `Your Prompt does not call your Agent`. The reason for this problem is **LLM unable to determine relationship between your prompt and the MCP Agent System Prompt**.
@@ -163,16 +167,16 @@ When Tool is called, it's indicated by the phrase `Start calling tool <tool name
 
 
 
-# Additional method to debug MCP in Intel AI Assistant Builder
+# Additional Debugging Methods
 
 ## Method 1 - Debug Logs
 If you have access to Intel AI Assistant Builder Debug build, you can refer to the logs located at `C:\Temp\IntelAia\*.pyllmserv.log` and search for `/chat/completions` or `openai._base_client`.
 
 ## Method 2 - Wireshark
-When you unable to get a Debug Build, you can always use `Wireshark` to sniff packets going back and forth to `ovms.exe` port. However, this method requires some understanding on how to use `Wireshark`.
+When you are unable to get a Debug Build, you can always use `Wireshark` to sniff packets going back and forth to `ovms.exe` port. However, this method requires some understanding on how to use `Wireshark`.
 
 
-### How to use Wireshark
+### How to Use Wireshark
 1. [Download](https://www.wireshark.org/download.html) and install `Wireshark`
 2. Once installed, open and choose `Adapter for loopback traffic capture`. For our explanation purpose, it is safe to assume `loopback` is similar to `localhost` or `127.0.0.1`.
     ![wireshark choose loopback](./images/wireshark-1.png)
@@ -202,15 +206,15 @@ When you unable to get a Debug Build, you can always use `Wireshark` to sniff pa
     ![wireshark hello result](./images/wireshark-7.png)
     ![wireshark hello](./images/wireshark-3.png)
 
-### Using Wireshark to debug MCP calls
+### Using Wireshark to Debug MCP Calls
 
-For MCP calls, there is 2 interesting payload to observe. `POST /v3/chat/completions HTTP/1.1 , JSON (application/json)` and `HTTP/1.1 200 (text/event-stream)`. However, MCP calls happened multiple times. So you might need to repeat the sniff process multiple time.
+For MCP calls, there are 2 interesting payloads to observe. `POST /v3/chat/completions HTTP/1.1 , JSON (application/json)` and `HTTP/1.1 200 (text/event-stream)`. However, MCP calls happen multiple times. So you might need to repeat the sniff process multiple times.
 
-below are the example of debugging Mindmap MCP call.
+Below is an example of debugging Mindmap MCP call.
 
 ![wireshark example](./images/wireshark-example-1.png)
 
-#### first payload - Prompt and Response
+#### First Payload - Prompt and Response
 ``` JSON
 {
     "messages": [
@@ -260,7 +264,7 @@ Question: generate a mindmap from C:\\redacted\\default\\example\\mcp_servers\\m
 
 ![wireshark example first payload](./images/wireshark-example-2.png)
 
-#### second payload - Prompt
+#### Second Payload - Prompt
 ``` JSON
 {
     "messages": [
