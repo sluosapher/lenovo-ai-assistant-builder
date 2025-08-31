@@ -195,14 +195,17 @@ This release addresses a wide range of issues, including CSV encoding errors, se
 
 #### Previous Release Notes
 
-#### Version 1.2.1
+##### Version 1.2.2
+- Enhanced Hardware Verification: We've refined our hardware check feature to ensure compatibility avoiding issues with the latest CPU models.
+
+##### Version 1.2.1
 - Service Only Installer
 This installer will only install AI Assistant Builder service and backend. 
 
 - Bug fix for Arrow Lake System
 Fix installation issues with some Arrow Lake Systems. 
 
-#### Version 1.2.0
+##### Version 1.2.0
 
 - New Models Support
 Intel(R) AI Assistant Builder now officially supports Qwen2.5-7B, Phi4-mini, and Deepseek-R1-Distilled-Qwen-7B.

@@ -1,42 +1,101 @@
-# Instructions to enable MCP agents in Intel AI Assistant Builder
+# Super Agent (MCP) Workflow Guide for Intel AI Assistant Builder
 
-## General Step to add MCP Server to Intel AI Assistant Builder
+## Getting Started: Adding MCP Servers
+Please refer to the **"Super Agent (MCP)"** section in the [user guide](https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf) to learn how to add MCP servers .
 
-1. Launch Intel AI Assistant Builder and click Manage MCP Server.
+## MCP Server Support
 
-    ![manage mcp server](./images/manage-mcp-server.png)
-2. Click on the Add new MCP server info and a popup window will appear. The image below is using Mindmap MCP Server as an example.The actual configuration depends on the MCP Server configuration itself. Click Add once you complete.
+Intel AI Assistant Builder supports wide range of MCP (Model Context Protocol) servers:
 
-    ![manage mcp server add](./images/manage-mcp-server-add.png)
-3. If the MCP Server requires Environment Variable, you can fill it using the format shown below separated by a space.
-```
-ENV1:VALUE1 ENV2:VALUE2
-```
-4. Once added, you need to add the server to an agent. Make sure to select your MCP server from the dropdown list. The `Description` and `System Prompt` will affect the outcome of MCP call results.
+### 1. Generated MCP Servers (mcp_codegen)
+Custom MCP servers that can be automatically generated using our codegen framework located at [mcp/mcp_codegen](https://github.com/intel/intel-ai-assistant-builder/tree/main/mcp/mcp_codegen). These servers are purpose-built for Intel AI Assistant Builder, offering optimized performance and seamless integration with the platform's capabilities.
 
-    ![manage mcp agent add](./images/manage-mcp-agent-add.png)
-    ![manage mcp agent add form](./images/manage-mcp-agent-add-2.png)
+**Examples:**
+Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-assistant-builder/tree/main/mcp/mcp_servers)
+- Mindmap generation server
+- Flight search server
+- Hotel search server
+- Math servers
 
-5. Click start and wait until it completed. Then you can start using MCP in your normal prompt.
+**How to Build and Run:**
+1. Each MCP server example contains a build script (`build.bat` or `build.sh`)
+2. Run the build script in Command Prompt or PowerShell
+3. After successful build, the executable will be available in the `dist` folder
+4. **Prerequisites:** Python must be installed on your system to run the build scripts
 
-    ![manage mcp agent start](./images/manage-mcp-agent-start.png)
-    ![manage mcp agent started](./images/manage-mcp-agent-start-2.png)
+**How to Add MCP Server to Intel AI Assistant Builder:**
+1. In the Intel AI Assistant Builder UI, select **Command** as the connection type
+2. Set the **MCP Server Command** field to the full path of your generated executable
+3. Configure environment variables if needed (e.g., Flight and Hotel servers require `SERP_API_KEY` from [serpapi.com](https://serpapi.com))
 
+See the math server example below for reference:
 
-## Dependencies
-MCP capability for Intel AI Assistant Builder in general leverages on `NodeJS`, `Python`. Some of the most common MCP servers also leverage on `npx (npm package execute)` and `uvx (alias for uv tool run)`.
-- `NodeJS >= v23.11.1`
-- `Python >= 3.12.9`
+<img src="./images/math-mcp-server.png" alt="math mcp server" width="50%">
 
-### General guideline for debugging dependencies
-Intel AI Assistant Builder runs it service as a `Services`. It also means Intel AI Assistant Builder will leverage on `System Environment` instead of `User Environment`. If your system is connected to a corporate firewall, you should also add `HTTP_PROXY`,`HTTPS_PROXY`, and `NO_PROXY` to the `System Environment`.
+### 2. Open Source MCP Servers
+We also support community-maintained MCP servers from the official Model Context Protocol repository at [github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers). These servers provide access to popular tools and services.
 
-1. In powershell, write this command. It will replace the current terminal's PATH
+Below are three different methods to install and set up open source MCP servers:
+
+#### Method 1: Using pip (Python Package Installer)
+
+**Prerequisites:** Python must be installed on your system. We recommend using Python 3.12 or later, which can be downloaded from https://www.python.org/downloads/.
+
+**Steps:**
+1. Install the MCP server package via pip (optionally in a virtual environment):
+   ```bash
+   pip install mcp-server-time
+   ```
+
+2. **Important:** Add Python to your **System Environment Variables** (not User Environment Variables):
+   - Add the Python installation path to System PATH
+   - Example path: `C:\Users\your_user_name\AppData\Local\Programs\Python\Python312\`
+   - **Restart your computer** for the system environment change to take effect
+   - Or use the full Python path when configuring the MCP server like below
+
+<img src="./images/pip-time.png" alt="pip time" width="50%">
+
+#### Method 2: Using uvx (Universal Executor)
+
+**Steps:**
+1. Open PowerShell and install uvx:
+   ```powershell
+   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
+
+2. **Important Setup:**
+   - The installation will show the uvx.exe download path
+   - Add this path to **System Environment Variables** (not User Environment Variables)
+   - **Restart your computer** for the system environment change to take effect
+   - **Corporate Network Users:** Configure proxy settings (`HTTP_PROXY`, `HTTPS_PROXY`) in System Environment Variables if your network requires proxy authentication for downloading libraries
+
+<img src="./images/uvx-time.png" alt="uvx time" width="50%">
+
+#### Method 3: Using npx (Node Package Executor)
+
+**Prerequisites:** Node.js must be installed
+
+**Steps:**
+1. Download and install Node.js from: https://nodejs.org/en/download/current
+
+2. **Important Setup:**
+   - Add `C:\Users\your_user_name\AppData\Roaming\npm` to **System Environment PATH**
+   - Replace `your_user_name` with your actual Windows username
+   - **Restart your computer** for the system environment change to take effect
+
+<img src="./images/npx-github.png" alt="npx github" width="50%">
+
+### Troubleshooting Dependencies
+Intel AI Assistant Builder runs as a Windows Service, which means it uses **System Environment Variables** instead of **User Environment Variables**. If your system is behind a corporate firewall, also add `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` to the System Environment.
+
+**To test if Intel AI Assistant Builder can find your tools:**
+
+1. Open PowerShell and simulate the service environment:
 ``` Powershell
 $env:PATH=[System.Environment]::GetEnvironmentVariable('PATH','Machine')
 ```
 
-2. Using the same terminal, you can test for `npx`,`uvx`,`python` and `node`. 
+2. Test if the required tools are available:
 ``` Powershell
 Get-Command npx
 Get-Command uvx
@@ -44,107 +103,45 @@ Get-Command python
 Get-Command node
 ```
 
-3. If you have NodeJS and Python installed in your computer but the command above fails, It means Intel AI Assistant Builder will not able to run those command.
-4. To solve this, add `npx`,`uvx`,`python` and `node` folders to your `System Environment` `PATH`.
-5. Repeat the steps in `a new powershell window` to verify your changes.
+3. If any commands fail (even though you have Node.js/Python installed), Intel AI Assistant Builder won't be able to find them either.
 
-## Mindmap MCP Server
+4. **Solution:** Add the installation folders for `npx`, `uvx`, `python`, and `node` to your **System Environment PATH** (not User PATH).
 
-![mindmap mcp server](./images/mindmap-mcp.png)
+5. Open a new PowerShell window and repeat steps 1-2 to verify the fix.
 
-Mindmap MCP Server will convert Markdown content to a mind map. The implementation are leveraging on nodejs tool called markmap-cli. 
+### Alternative Solution for Connection Closed Errors
 
-### Steps to launch Mindmap MCP Server
+If you're still experiencing "connection closed" issues after following the above steps, you can resolve this by using direct command execution with the proper interpreter prefix.
 
-1. git clone `https://github.com/intel/intel-ai-assistant-builder` and go to  the folder `mcp/mcp_servers/mcp_mind_map`
-2. in Powershell, run the command below to build `mind_map-mcp-server.exe`. This MCP server is generated using the scripts in `mcp/mcp_servers/mcp_codegen`.
+**Solution:** Use the full path to the interpreter when configuring MCP servers instead of relying on PATH resolution.
 
-    ``` powershell
-    cd mcp/mcp_servers/mcp_mind_map
-    ./build.bat
-    ```
+**For detailed instructions and examples, see:** [Fixing MCP Error 32000 Connection Closed](https://mcpcat.io/guides/fixing-mcp-error-32000-connection-closed/)
 
-3. once the build is complete, you can close the terminal and confirm the EXE is generated in the `mcp/mcp_servers/mcp_mind_map/dist` folder.
-4. You can now use Intel AI Assistant Builder UI to add the MCP server info
-
-### Information for adding mcp_mind_map MCP Server to AI Assistant Builder
-
-1. The MCP Server leverage `transport=sse`, which means the MCP Server expects all communication through network port. The EXE generated in the step above is a special EXE that will start the MCP server using command. see image for more info.
-
-    ![mindmap mcp server configuration](./images/mindmap-mcp-server.png)
-
-    | MCP Server Information             | Value                                                                     |
-    |------------------------------------|---------------------------------------------------------------------------|
-    | Type                               | Command                                                                   |
-    | MCP Server Name                    | mindmap                                                                   |
-    | MCP Server Command                 | C:\path\to\your\mcp\mcp_servers\mcp_mind_map\dist\mind_map-mcp-server.exe |
-    | MCP Server Command Args (Optional) | start --json                                                              |
-    | MCP Server Env (Optional)          | leave blank                                                               |
+<img src="./images/cmd-github.png" alt="Direct command execution example" width="50%">
 
 
-## Flight Planning and Hotel Planning MCP Server
-In this example, we are showing that 2 independent MCP server can work together to answer the question. Those MCP server still will work independently. To make this works, you require an API key from [serpapi.com](https://serpapi.com).
+# MCP Server Demo Videos
 
-![Hotel mcp server](./images/hotel-mcp.png)
-![Flight mcp server](./images/flight-mcp.png)
-![Hotel mcp server](./images/flight-and-hotel-mcp.png)
+Explore our comprehensive video demonstrations to see MCP servers in action. All videos are located in the `media\` folder.
 
-![Flight and Hotel mcp server part 1](./images/flight-and-hotel-mcp-1.png)
-![Flight and Hotel mcp server part 2](./images/flight-and-hotel-mcp-2.png)
+## Available Demos
 
-### Steps to launch Flight MCP Server and Hotel MCP Server
+### 🧳 Business Travel Agent
+**Features:** Flight search and hotel booking with Google Flight and Google Hotel MCP servers  
+**Video:** `media\SuperBuilder_Demo_Business_Travel_MCP_Server.mp4`
 
-1. git clone `https://github.com/intel/intel-ai-assistant-builder` and go to the folder `mcp/mcp_servers/mcp_google_flight`
-2. in Powershell, run the command below to build `google_flight-mcp-server.exe`. This MCP server is generated using the scripts in `mcp/mcp_servers/mcp_codegen`.
+### 🕒 Time Zone Agent  
+**Features:** Get current time across different time zones worldwide  
+**Video:** `media\SuperBuilder_Demo_Time_MCP_Server.mp4`
 
-    ``` powershell
-    cd mcp/mcp_servers/mcp_google_flight
-    ./build.bat
-    ```
+### 🌐 Website Fetch Agent
+**Features:** Fetch and process website content using the fetch MCP server  
+**Video:** `media\SuperBuilder_Demo_Fetch_Website_MCP_Server.mp4`
 
-3. once the build is complete, you can close the terminal and confirm the EXE is generated in the `mcp/mcp_servers/mcp_google_flight/dist` folder.
-4. Repeat the same step for `mcp_google_hotel`.
-5. at the end , you will have both `google_flight-mcp-server.exe` and  `google_hotel-mcp-server.exe`
+### 📁 File System Agent
+**Features:** Access and manage your local file system  
+**Video:** `media\SuperBuilder_Demo_File_System_MCP_Server.mp4`
 
-
-### Information for adding Both Flight MCP Server and Hotel MCP Server to AI Assistant Builder
-
-1. The MCP Server leverage `transport=sse`, which means the MCP Server expects all communication through network port. The EXE generated in the step above is a special EXE that will start the MCP server using command. see image for more info.
-
-| MCP Server Information             | Value                                                                               |
-|------------------------------------|-------------------------------------------------------------------------------------|
-| Type                               | Command                                                                             |
-| MCP Server Name                    | flight                                                                              |
-| MCP Server Command                 | C:\path\to\your\mcp\mcp_servers\mcp_google_flight\dist\google_flight-mcp-server.exe |
-| MCP Server Command Args (Optional) | start --json                                                                        |
-| MCP Server Env (Optional)          | SERP_API_KEY:redacted                                                               |
-
-
-| MCP Server Information             | Value                                                                             |
-|------------------------------------|-----------------------------------------------------------------------------------|
-| Type                               | Command                                                                           |
-| MCP Server Name                    | hotel                                                                             |
-| MCP Server Command                 | C:\path\to\your\mcp\mcp_servers\mcp_google_hotel\dist\google_hotel-mcp-server.exe |
-| MCP Server Command Args (Optional) | start --json                                                                      |
-| MCP Server Env (Optional)          | SERP_API_KEY:redacted                                                             |
-
-![Flight mcp server configuration](./images/flight-mcp-server.png)
-![Hotel mcp server configuration](./images/hotel-mcp-server.png)
-
-
-### Information for combining Flight MCP Server and Hotel MCP Server as a single MCP Agent
-1. To make Flight MCP Server and Hotel MCP server work together, we need to specify it in the Agent System Prompt. Below are the information we use to generate the image above.
-2. The result of the prompt depends on the Large Language Model used (LLM). But with the right Agent Name, Description and System Prompt, we can steer the LLM to get intended result.
-
-| MCP Agent Information | Value                                                                                                                                                                          |
-|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| MCP Agent Name        | flight hotel agent                                                                                                                                                             |
-| Description           | flight and hotel agent description                                                                                                                                             |
-| System Prompt         | you have access to both flight and hotel tool. if asked about both hotel and flight, always choose the first flight option and suggest hotel based on the first flight option. |
-| MCP Servers           | select hotel and flight                                                                                                                                                        |
-
-
-![Flight mcp server configuration](./images/flight-and-hotel-mcp-agent.png)
 
 # Debugging MCP in Intel AI Assistant Builder
 
