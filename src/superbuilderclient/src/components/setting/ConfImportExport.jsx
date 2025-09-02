@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+﻿import React, { useContext, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
   Button,
@@ -11,13 +11,14 @@ import {
 
 import SimpleAccordion from "../accordion/SimpleAccordion";
 import useDataStore from "../../stores/DataStore";
+import useMcpStore from "../../stores/McpStore";
 import { useTranslation } from "react-i18next";
 import { ChatContext } from "../context/ChatContext";
 
 const ConfImportExport = () => {
   const { t } = useTranslation();
   const config = useDataStore((state) => state.config);
-  const {isChatReady, setIsChatReady} = useContext(ChatContext);
+  const { isChatReady, setIsChatReady } = useContext(ChatContext);
   const [exportDialog, setExportDialog] = useState(false);
   const [exportPath, setExportPath] = useState("");
   const [exportedFilename, setExportedFilename] = useState("");
@@ -35,7 +36,14 @@ const ConfImportExport = () => {
     });
     if (file) {
       console.log(file);
-      await useDataStore.getState().importConfig(file);
+      const importResult = await useDataStore.getState().importConfig(file);
+
+      if (importResult) {
+        // Trigger MCP data refresh
+        useMcpStore.getState().triggerRefresh();
+        console.log("MCP data refresh triggered.");
+      }
+
       useDataStore.getState().setEnableAllFeature(false);
       await useDataStore.getState().getDBConfig();
     }
@@ -78,7 +86,7 @@ const ConfImportExport = () => {
         >
           <Button
             variant="contained"
-            fullWidth            
+            fullWidth
             onClick={handleImport}
             disabled={!isChatReady}
           >
@@ -86,7 +94,7 @@ const ConfImportExport = () => {
           </Button>
           <Button
             variant="contained"
-            fullWidth            
+            fullWidth
             onClick={handleExport}
             disabled={!isChatReady}
           >
@@ -105,8 +113,7 @@ const ConfImportExport = () => {
           {t("setting.confimportexport.info.location")} <br />
           {exportPath} <br />
           <br />
-          {t("setting.confimportexport.info.filename")}{" "}
-          {exportedFilename}
+          {t("setting.confimportexport.info.filename")} {exportedFilename}
         </DialogContent>
         <DialogActions sx={{ padding: 0 }}>
           <Button
@@ -114,7 +121,7 @@ const ConfImportExport = () => {
             variant="contained"
             fullWidth
             onClick={() => setExportDialog(false)}
-            sx={{ backgroundColor: "#0054ae", borderRadius: "0px" }}
+            sx={{ borderRadius: "0px" }}
           >
             {t("setting.confimportexport.info.ok")}
           </Button>

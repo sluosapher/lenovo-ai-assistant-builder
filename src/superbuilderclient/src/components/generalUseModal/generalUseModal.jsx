@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import AssistantLogo from "../assistantLogo/assistantLogo";
 import "./generalUseModal.css";
 import { useRef, useEffect } from "react";
@@ -36,7 +36,7 @@ const ModalWrapper = ({
 
   const defaultFooter = (
     <div className={hideFooter ? "no-footer" : "info-footer"}>
-      <Button className="footer-button" variant="contained" onClick={close}>
+      <Button className="footer-button" variant="contained" onClick={close} sx={{borderRadius:"0px"}}>
         {buttonName}
       </Button>
     </div>
@@ -64,7 +64,7 @@ const ModalWrapper = ({
           "--logo-container-background-color":
             assistant?.header_bg_color,
         }}>
-          <AssistantLogo />
+          <AssistantLogo transparentDefaultBackground={true} />
         </div>
         <span className="info-title">
           {header}

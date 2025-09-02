@@ -25,7 +25,7 @@ service SuperBuilder {
   // Check on health status backend system / service (for example: RAG check)
   rpc CheckHealth (CheckHealthRequest) returns (CheckHealthResponse);
 
-  // Give LLM feedback on a question's response to improve future responses
+  // Vector store user feedback to improve future responses
   rpc AddFeedback (AddFeedbackRequest) returns (AddFeedbackResponse);
 
   // Upload a list of files to the RAG module to be vector stored, stream the upload progress
@@ -52,8 +52,8 @@ service SuperBuilder {
   // Change the RAG, LLM, and backend parameters
   rpc SetParameters (SetParametersRequest) returns (SetParametersResponse);
 
-  // Inform the server that the client has disconnected
-  rpc ClientDisconnected (ClientDisconnectedRequest) returns (ClientDisconnectedResponse);
+  // Inform the server that the client has disconnected to stop the backend service provider
+  rpc DisconnectClient (DisconnectClientRequest) returns (DisconnectClientResponse);
 
   // Get config info from middleware
   rpc GetClientConfig (GetClientConfigRequest) returns (GetClientConfigResponse);
@@ -83,42 +83,124 @@ service SuperBuilder {
   rpc  SetUserConfigViewModel(SetUserConfigViewModelRequest) returns (SetUserConfigViewModelResponse);
 
   rpc ConvertModel(ConvertModelRequest) returns (ConvertModelResponse);
+  rpc ValidateModel (ValidateModelRequest) returns (ValidateModelResponse);
 
   rpc UploadModel(UploadModelRequest) returns (UploadModelResponse);
 
   rpc ExportUserConfig(ExportUserConfigRequest) returns (ExportUserConfigResponse);
   rpc ImportUserConfig(ImportUserConfigRequest) returns (ImportUserConfigResponse);
+
+  rpc RemoveModel(RemoveModelRequest) returns (RemoveModelResponse);
+
+  // MCP Agent RPCs
+  rpc GetMCPAgents (GetMCPAgentsRequest) returns (GetMCPAgentsResponse);
+  rpc GetActiveMCPAgents (GetActiveMCPAgentsRequest) returns (GetActiveMCPAgentsResponse);
+  rpc AddMCPAgent (AddMCPAgentRequest) returns (AddMCPAgentResponse);
+  rpc EditMCPAgent (EditMCPAgentRequest) returns (EditMCPAgentResponse);
+  rpc RemoveMCPAgent (RemoveMCPAgentRequest) returns (RemoveMCPAgentResponse);
+  rpc StartMCPAgent (StartMCPAgentRequest) returns (StartMCPAgentResponse);
+  rpc StopMCPAgent (StopMCPAgentRequest) returns (StopMCPAgentResponse);
+
+  // MCP Server RPCs
+  rpc GetMCPServers (GetMCPServersRequest) returns (GetMCPServersResponse);
+  rpc GetActiveMCPServers (GetActiveMCPServersRequest) returns (GetActiveMCPServersResponse);
+  rpc AddMCPServer (AddMCPServerRequest) returns (AddMCPServerResponse);
+  rpc EditMCPServer (EditMCPServerRequest) returns (EditMCPServerResponse);
+  rpc RemoveMCPServer (RemoveMCPServerRequest) returns (RemoveMCPServerResponse);
+  rpc StartMCPServer (StartMCPServerRequest) returns (StartMCPServerResponse);
+  rpc StopMCPServer (StopMCPServerRequest) returns (StopMCPServerResponse);
+  rpc GetMCPServerTools (GetMCPServerToolsRequest) returns (GetMCPServerToolsResponse);
+
 }
 
 // The request message containing the user's name.
 message SayHelloRequest {
+  // Name of the client sending the request
   string name = 1;
 }
 
 // The response message containing the greetings.
 message SayHelloResponse {
+  // Returns status message "ready" if connection is successful
   string message = 1;
 }
 
 // The request message for the chat.
 message ConversationHistory {
+  // Message sender (ex. 'assistant' or 'user')
   string role = 1;
+  // Message content
   string content = 2;
 }
 
-// The request message for the chat.
+// Configure a prompt to run on a specific workflow type
+message PromptOptions {
+  // Standard RAG + LLM Chat
+  message GenericPrompt {}
+  // Evaluate a list of resumes against a scoring criteria
+  message ScoreResumesPrompt {
+    // When true, the prompt is the scoring criteria
+    bool isScoringCriteria = 1;
+  }
+  // Evaluate a list of general documents against a scoring criteria
+  message ScoreDocumentsPrompt {
+    // When true, the prompt is the scoring criteria
+    bool isScoringCriteria = 1;
+    // Include explanations for each score (will take longer to compute)
+    bool includeReasoning = 2;
+  }
+  // Advanced summary on a set of documents
+  message SummarizePrompt {}
+  // Generate table previews and SQL based on queries
+  message QueryTablesPrompt {}
+  // Query images (vision model required)
+  message QueryImagesPrompt {}
+  // Route all queries directly to the active MCP Agents
+  message SuperAgentPrompt {}
+
+  // The type of query being sent, defaults to generic chat if unset
+  oneof promptType {
+    GenericPrompt genericPrompt = 1;
+    ScoreResumesPrompt scoreResumesPrompt = 2;
+    ScoreDocumentsPrompt scoreDocumentsPrompt = 3;
+    SummarizePrompt summarizePrompt = 4;
+    QueryTablesPrompt queryTablesPrompt = 5;
+    QueryImagesPrompt queryImagesPrompt = 6;
+    SuperAgentPrompt superAgentPrompt = 7;
+  } 
+}
+
 message ChatRequest {
+  // Specify the sender of the message
   string name = 1;
+  // The query to send to the LLM, will be set to a default prompt if unset
   string prompt = 2;
+  // Previous messages in the conversation to provide additional context
   repeated ConversationHistory history = 3;
-  int32 sessionId = 4; // chat session that this chat belongs to
-  optional string queryType = 5; // The type of query to do on the attached files
-  optional string attachedFiles = 6; // The files to use specifically for this chat request
+  // Chat session that this request belongs to, if none specified then history is not saved
+  optional int32 sessionId = 4;
+  // Additional options for the prompt to route to different workflows, defaults to general chat if unset
+  optional PromptOptions promptOptions = 5;
+  // A JSON list of filepaths for RAG chat. 'None' = use ALL files, '[]' = use NO files.
+  optional string attachedFiles = 6;
 }
 
 // The response message for the chat.
 message ChatResponse {
+  // The returned response content. If streaming, concatenate all returned messages for the full response.
   string message = 1;
+  // Any file references used to get a response. If streaming, returned with the last response.
+  repeated Reference references = 2;
+}
+
+// Context reference object referring to particular file and page number
+message Reference {
+  // filepath of the reference
+  string file = 1;
+  // referenced page number if there is one
+  optional int32 page = 2;
+  // referenced sheet name if there is one
+  optional string sheet = 3;
 }
 
 message StopChatRequest {
@@ -131,46 +213,61 @@ message LoadModelsRequest {
 }
 
 message LoadModelsResponse {
-	bool status = 1; // returns true if successful load
+  // returns true on successful load
+  bool status = 1;
 }
 
-// The request message containing a placeholder in case we need to send data
+// The request message containing the type of health request
 message CheckHealthRequest {
+  // specify 'config' to send and save the MW config to the backend service, or 'version' to return current service version
 	string typeOfCheck = 1;
 }
 
 // The response message containing the status of the system
 message CheckHealthResponse {
+  // returns version number or status of save-config operation
   string status = 1;
 }
 
 // The request message containing a question, its feedback, and type of feedback
 message AddFeedbackRequest {
+  // The original query the user sent in
 	string question = 1;
+  // Any user feedback based on the response returned
 	string feedback = 2;
+  // negative feedback: 'feedback-thumbs-down', positive feedback: 'feedback-thumbs-up'
 	string feedbackType = 3;
-	optional string answer = 4;
+  // The response returned for the given question
+  optional string answer = 4;
 }
 
 // The response message containing the feedback + question + feedback type
 message AddFeedbackResponse {
+  // Returns status response if successful
   string message = 1;
 }
 
 // The request message containing a list of files to be uploaded to RAG
 message AddFilesRequest {
+  // A JSON list of filepaths to upload
 	string filesToUpload = 1;
+  // If specified and not an empty string, will skip embedding and only store the filepath
+  optional string uploadType = 2;
 }
 
 // The response message streamed back as a file is uploaded
 message AddFilesResponse {
-  string filesUploaded = 1; // list of files able to be uploaded to vector db
-  optional string currentFileUploading = 2; // current file being uploaded if any
-  optional string currentFileProgress = 3; // upload progress percentage from 0 to 100
+  // A JSON list of filepaths that have been successfully added to the file store
+  string filesUploaded = 1;
+  // The current filepath being added, if any
+  optional string currentFileUploading = 2; 
+  // The current file's progress percentage ranging from 0 to 100
+  optional string currentFileProgress = 3;
 }
 
 // The request message which currently contains nothing (but might be needed in the future)
 message GetFileListRequest {
+  // Currently unused, always returns filepaths with metadata
   string fileType = 1;
 }
 
@@ -181,21 +278,28 @@ message StopAddFilesResponse {
 }
 
 // The request message when a client disconnects
-message ClientDisconnectedRequest {
+message DisconnectClientRequest {
+}
+
+// The response message when a client disconnects
+message DisconnectClientResponse {
 }
 
 // The response message containing list of all files found in document store
 message GetFileListResponse {
+  // A JSON list of all filepaths and their respective stored metadata 
   string fileList = 1;
 }
 
 // The request message containing a list of files to be removed from RAG
 message RemoveFilesRequest {
+  // A JSON list of all filepaths to try and remove from the file store
 	string filesToRemove = 1;
 }
 
 // The response message containing list of all files successfully removed from RAG
 message RemoveFilesResponse {
+  // Returns the original JSON list of filepaths sent in if successful
   string filesRemoved = 1;
 }
 
@@ -214,9 +318,12 @@ message DownloadFilesResponse {
 
 // The request message which tells the backend which models to set
 message SetModelsRequest {
+  // Sets and loads a new LLM given a model path
 	optional string llm = 1;
+  // Sets and loads a new embedder model given a model path
 	optional string embedder = 2;
-	optional string ranker = 3;
+  // Sets and loads a new ranker model given a model path
+  optional string ranker = 3;
 }
 
 // The response message of the models that were set
@@ -226,9 +333,12 @@ message SetModelsResponse {
 
 // The request message which tells the backend which models to unload (true means unload)
 message UnloadModelsRequest {
+  // When true, unload the current LLM
 	bool llm = 1;
+  // When true, unload the current embedder model
 	bool embedder = 2;
-	bool ranker = 3;
+  // When true, unload the current ranker model
+  bool ranker = 3;
 }
 
 // The response message of the models that were unloaded
@@ -244,10 +354,6 @@ message SetParametersRequest {
 
 // Response of setting the parameters, nothing for now
 message SetParametersResponse {}
-
-// The response message when a client disconnects
-message ClientDisconnectedResponse {
-}
 
 // The request message containing the user's name.
 message GetClientConfigRequest {
@@ -294,13 +400,13 @@ message SetSessionNameResponse {
 }
 
 message SetActiveAssistantRequest {
-    string assistant = 1;
-    string models_json = 2;
+  string assistant = 1;
+  string models_json = 2;
 }
 
 message SetActiveAssistantResponse {
-    bool success = 1;
-    string message = 2;
+  bool success = 1;
+  string message = 2;
 }
 
 message SetAssistantViewModelRequest {
@@ -343,23 +449,103 @@ message UploadModelResponse {
 
 // Request message for exporting user configuration
 message ExportUserConfigRequest {
-    string AssistantName = 1;
-    string ExportPath = 2;
+  string AssistantName = 1;
+  string ExportPath = 2;
 }
 
 // Response message for exporting user configuration
 message ExportUserConfigResponse {
-    bool Success = 1;
-    string Message = 2;
+  bool Success = 1;
+  string Message = 2;
 }
 
 // Request message for importing user configuration
 message ImportUserConfigRequest {
-    string ImportPath = 1;
+  string ImportPath = 1;
 }
 
 // Response message for importing user configuration
 message ImportUserConfigResponse {
-    bool Success = 1;
-    string Message = 2;
+  bool Success = 1;
+  string Message = 2;
 }
+
+message RemoveModelRequest {
+	string model_name = 1;
+  bool is_incompatible_model_removal = 2;
+}
+
+message RemoveModelResponse {
+	string message = 1;
+}
+
+message ValidateModelRequest {
+	string model_path = 1;
+  optional string model_type = 2;
+}
+
+message ValidateModelResponse {
+	bool is_valid = 1;
+}
+
+// =====
+// MCP
+// =====
+
+message CommonMCPResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ============ MCP Agent ================
+message MCPAgent {
+  int32 id = 1;
+  string name = 2;
+  string desc = 3;
+  string message = 4;
+  repeated int32 server_ids = 5;
+}
+
+message GetMCPAgentsRequest {}
+message GetActiveMCPAgentsRequest {}
+message AddMCPAgentRequest { MCPAgent agent = 1;}
+message EditMCPAgentRequest { MCPAgent agent = 1;}
+message RemoveMCPAgentRequest { string AgentName = 1; }
+message StartMCPAgentRequest { string AgentName = 1; }
+message StopMCPAgentRequest { string AgentName = 1; }
+
+message GetMCPAgentsResponse { repeated MCPAgent agents = 1; }
+message GetActiveMCPAgentsResponse { repeated string names = 1; }
+message AddMCPAgentResponse { bool success = 1; string message = 2; }
+message EditMCPAgentResponse { bool success = 1; string message = 2; }
+message RemoveMCPAgentResponse { bool success = 1; string message = 2; }
+message StartMCPAgentResponse { bool success = 1; string message = 2; }
+message StopMCPAgentResponse { bool success = 1; string message = 2;}
+
+// ============ MCP Server ================
+message MCPServer {
+  int32 Id = 1;
+  string ServerName = 2;
+	string Command = 3;
+	string Args = 4;
+	string Url = 5;
+	string Env = 6;
+}
+
+message GetMCPServersRequest {}
+message GetActiveMCPServersRequest {}
+message AddMCPServerRequest { MCPServer server = 1;}
+message EditMCPServerRequest { MCPServer server = 1;}
+message RemoveMCPServerRequest { string ServerName = 1; }
+message GetMCPServerToolsRequest { string ServerName = 1; }
+message StartMCPServerRequest { string ServerName = 1; }
+message StopMCPServerRequest { string ServerName = 1; }
+
+message GetMCPServersResponse { repeated MCPServer servers = 1; }
+message GetActiveMCPServersResponse { repeated string names = 1; }
+message AddMCPServerResponse { bool success = 1; string message = 2; }
+message EditMCPServerResponse { bool success = 1; string message = 2; }
+message RemoveMCPServerResponse { bool success = 1; string message = 2; }
+message GetMCPServerToolsResponse { bool success = 1; string message = 2; }
+message StartMCPServerResponse { bool success = 1; string message = 2; }
+message StopMCPServerResponse { bool success = 1; string message = 2; }

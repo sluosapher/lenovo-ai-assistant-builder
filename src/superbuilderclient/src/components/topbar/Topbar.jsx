@@ -1,14 +1,14 @@
-import "./Topbar.css";
+﻿import "./Topbar.css";
 import React, { useEffect, useState, useContext } from "react";
 import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
 import AssistantLogo from "../assistantLogo/assistantLogo";
 import ModalWrapper from "../generalUseModal/generalUseModal";
 import { AppStatusContext } from "../context/AppStatusContext";
-
-import { useTranslation } from 'react-i18next';
-
+import { EmailWindowContext } from "../context/EmailWindowContext";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -16,14 +16,16 @@ import {
   Button,
   IconButton,
   Typography,
-  Link
-} from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
-import MinimizeIcon from '@mui/icons-material/Minimize';
-import CloseIcon from '@mui/icons-material/Close';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
-
+  Link,
+} from "@mui/material";
+import HelpIcon from "@mui/icons-material/Help";
+import MinimizeIcon from "@mui/icons-material/Minimize";
+import CloseIcon from "@mui/icons-material/Close";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import HelpGuideIcon from "@mui/icons-material/School";
+import LicenseInfoIcon from "@mui/icons-material/Policy";
 import ModelLink from "../modelLink/ModelLink";
 import useDataStore from "../../stores/DataStore";
 const appWindow = getCurrentWindow();
@@ -33,10 +35,17 @@ const Topbar = ({ children }) => {
   const { system_info, config, assistant, assistantName } = useDataStore();
   const [isMaximized, setMaximized] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const { openBugReport } = useContext(EmailWindowContext);
 
   const { setClosing } = useContext(AppStatusContext);
   const toggleInfo = () => {
     setIsInfoOpen(!isInfoOpen);
+  };
+
+  const openHelpGuide = async () => {
+    await openUrl(
+      "https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf"
+    );
   };
 
   const openOSSFolder = async () => {
@@ -131,53 +140,58 @@ const Topbar = ({ children }) => {
         </div>
       </div>
       <div className="title-container" data-tauri-drag-region>
-        <div className="aia-title" data-tauri-drag-region style={{ color: assistant.header_text_bg_color }}>
+        <div
+          className="aia-title"
+          data-tauri-drag-region
+          style={{ color: assistant.header_text_bg_color }}
+        >
           {assistantName}
           <IconButton
             size="small"
             onClick={toggleInfo}
             sx={{ color: assistant.header_text_bg_color }}
           >
-            <InfoIcon />
+            <HelpIcon fontSize="small" />
           </IconButton>
 
           <ModalWrapper
             isOpen={isInfoOpen}
             toggleOpen={toggleInfo}
-            header={`${t('topbar.title')} - ${assistantName}`}
+            header={`${t("topbar.title")} - ${assistantName}`}
             hideFooter={false}
-            buttonName={t('topbar.content_part_10')}
+            buttonName={t("topbar.content_part_10")}
           >
             <div>
               <div>
                 <div>
                   <Typography variant="body1">
-                    {t('topbar.content_part_1')}{" "}
+                    {t("topbar.content_part_1")}{" "}
                     <Link
                       href="https://www.intel.com/aipc"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {t('topbar.content_part_2')}
+                      {t("topbar.content_part_2")}
                     </Link>{" "}
-                    {t('topbar.content_part_3')}
+                    {t("topbar.content_part_3")}
                   </Typography>
                   <br />
                   <Typography variant="body1">
-                    {t('topbar.content_part_4')}{" "}
+                    {t("topbar.content_part_4")}{" "}
                     <b>
-                      v{system_info?.CurrentVersion} | {t('topbar.content_part_4_1')}{" "}
+                      v{system_info?.CurrentVersion} |{" "}
+                      {t("topbar.content_part_4_1")}{" "}
                       <Link
                         href="https://aibuilder.intel.com"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {t('topbar.content_part_5')}
+                        {t("topbar.content_part_5")}
                       </Link>
                     </b>
                   </Typography>
                   <Typography variant="body1">
-                    {t('topbar.content_part_6')}{" "}
+                    {t("topbar.content_part_6")}{" "}
                     <b className="space-between">
                       {assistant["models"]["chat_model"]}
                     </b>
@@ -188,7 +202,7 @@ const Topbar = ({ children }) => {
                     </b>
                   </Typography>
                   <Typography variant="body1">
-                    {t('topbar.content_part_7')}{" "}
+                    {t("topbar.content_part_7")}{" "}
                     <b className="space-between">
                       {assistant["models"]["embedding_model"]}
                     </b>
@@ -199,7 +213,7 @@ const Topbar = ({ children }) => {
                     </b>
                   </Typography>
                   <Typography variant="body1">
-                    {t('topbar.content_part_8')}{" "}
+                    {t("topbar.content_part_8")}{" "}
                     <b className="space-between">
                       {assistant["models"]["ranker_model"]}
                     </b>
@@ -211,20 +225,37 @@ const Topbar = ({ children }) => {
                   </Typography>
                 </div>
                 <br />
-                <div className="oss-info">
-                  <Link
-                    component="button"
-                    variant="body1"
-                    onClick={openOSSFolder}
-                  >
-                    {t('topbar.content_part_9')}
-                  </Link>
-                </div>
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={openBugReport}
+                >
+                  <BugReportIcon sx={{ pr: 1 }} />
+                  {/*TODO: Translate*/}
+                  {"Report a bug"}
+                </Link>
+                <br />
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={openHelpGuide}
+                >
+                  <HelpGuideIcon sx={{ pr: 1 }} />
+                  {/*TODO: Translate*/}
+                  {"View the user guide"}
+                </Link>
+                <br />
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={openOSSFolder}
+                >
+                  <LicenseInfoIcon sx={{ pr: 1 }} />
+                  {t("topbar.content_part_9")}
+                </Link>
               </div>
             </div>
           </ModalWrapper>
-
-
         </div>
       </div>
       <div>{children}</div>
@@ -239,11 +270,12 @@ const Topbar = ({ children }) => {
           className="window-control"
           id="minimize"
           size="small"
-          sx={{ color: assistant.header_text_bg_color,
-             '& .MuiSvgIcon-root': {
+          sx={{
+            color: assistant.header_text_bg_color,
+            "& .MuiSvgIcon-root": {
               color: assistant.header_text_bg_color,
-             }
-           }}
+            },
+          }}
         >
           <MinimizeIcon fontSize="small" />
         </IconButton>
@@ -252,27 +284,30 @@ const Topbar = ({ children }) => {
           className="window-control"
           id="restoreMaximize"
           size="small"
-          sx={{ color: assistant.header_text_bg_color,
-             '& .MuiSvgIcon-root': {
+          sx={{
+            color: assistant.header_text_bg_color,
+            "& .MuiSvgIcon-root": {
               color: assistant.header_text_bg_color,
-             }
-           }}
+            },
+          }}
         >
-          {isMaximized ?
-            <CloseFullscreenIcon fontSize="small" /> :
+          {isMaximized ? (
+            <CloseFullscreenIcon fontSize="small" />
+          ) : (
             <OpenInFullIcon fontSize="small" />
-          }
+          )}
         </IconButton>
 
         <IconButton
           className="window-control"
           id="close"
           size="small"
-          sx={{ color: assistant.header_text_bg_color,
-             '& .MuiSvgIcon-root': {
+          sx={{
+            color: assistant.header_text_bg_color,
+            "& .MuiSvgIcon-root": {
               color: assistant.header_text_bg_color,
-             }
-           }}
+            },
+          }}
         >
           <CloseIcon fontSize="small" />
         </IconButton>

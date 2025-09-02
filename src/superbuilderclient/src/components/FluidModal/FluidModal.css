@@ -1,9 +1,8 @@
-.modal-box {
+﻿.modal-box {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%; /* Fluid width */
   max-width: 1080px; /* Optional max width */
   background-color: white; /* Equivalent to bgcolor: 'background.paper' */
   box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16), 0px 3px 6px rgba(0, 0, 0, 0.23); /* Equivalent to boxShadow: 24 */

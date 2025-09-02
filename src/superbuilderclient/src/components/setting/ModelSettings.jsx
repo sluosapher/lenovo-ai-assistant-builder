@@ -1,4 +1,4 @@
-import "./ModelSettings.css";
+﻿import "./ModelSettings.css";
 import React, { useState, useContext, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Button, Checkbox, Tooltip, FormControlLabel } from "@mui/material";
@@ -9,62 +9,7 @@ import AdvancedSlider from "../advancedSlider/AdvancedSlider";
 import Ajv from "ajv";
 import useDataStore from "../../stores/DataStore";
 import { useTranslation } from "react-i18next";
-
-const HighLowTooltipDescription = ({
-  overall_description,
-  high_description,
-  low_description,
-  isButton = false,
-  onClick,
-  children,
-}) => {
-  const { t } = useTranslation();
-  
-  const tooltipContent = (
-    <span>
-      {overall_description}
-      {high_description && low_description && (
-        <span>
-          <br />
-          <br />
-          <b>{t("setting.parameters.high_value")} </b> {high_description}
-          <br />
-          <br />
-          <b>{t("setting.parameters.low_value")} </b> {low_description}
-        </span>
-      )}
-    </span>
-  );
-
-  return (
-    <Tooltip
-      title={tooltipContent}
-      enterDelay={0}
-      leaveDelay={0}
-      placement="bottom-start"
-    >
-      {children ||
-        (isButton ? (
-          <Button
-            onClick={onClick}
-            sx={{ padding: 0, border: 'none', background: 'none' }}
-          >
-            <img
-              className="infoshape"
-              src="/images/normal_u151.svg"
-              alt="Info Icon"
-            />
-          </Button>
-        ) : (
-          <img
-            className="infoshape"
-            src="/images/normal_u151.svg"
-            alt="Info Icon"
-          /> 
-        ))}
-    </Tooltip>
-  );
-};
+import HighLowTooltipDescription from "../tooltip/HighLowTooltipDescription";
 
 const ModelSettings = () => {
   const { t } = useTranslation();
@@ -281,7 +226,7 @@ const ModelSettings = () => {
                   overall_description={overallDescription}
                   high_description={highDescription}
                   low_description={lowDescription}
-                />             
+                />
                 <span className="information-label">{displayName}</span>
               </div>
             }
@@ -351,15 +296,15 @@ const ModelSettings = () => {
         key={displayName}
         title={displayName}
         description={description}
+        variant="small"
       >
         <div className="accordion-section">
           {fields.map(
             (fieldData) =>
-              fieldData.name !== "query_rewriting" &&
               renderParameter(name, fieldData)
           )}
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={() => resetSectionToDefaults(name)}
             disabled={!canChangeValue}
           >

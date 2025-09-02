@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+﻿import React, { useEffect, useState, useRef, use } from "react";
 import { listen } from "@tauri-apps/api/event";
 import "./DragAndDrop.css";
 import FileManagement from "../fileManagement/FileManagement";
+import McpManagement from "../mcpManagement/McpManagement";
 import Button from "@mui/material/Button";
 import { FileManagementContext } from "../context/FileManagementContext";
 import { ChatContext } from "../context/ChatContext";
@@ -10,15 +11,28 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+
+import useMcpStore from "../../stores/McpStore";
 import useDataStore from "../../stores/DataStore";
 
 const DragAndDrop = () => {
-  const { config } = useDataStore();
+  const config  = useDataStore((state) => state.config);
+  const mcpManagementOpen = useMcpStore((state) => state.mcpManagementOpen);
   const [isDragAndDropVisible, setDragAndDropIsVisible] = useState(true);
   const [FilePaths, setFiles] = useState([]);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const { uploadFiles, uploadFolders, fileResponse, fileStatus, lastModifiedFiles, validExtensions, displayFileError, cancelFileUpload } = useContext(FileManagementContext);
+  const [isMcpLibraryOpen, setIsMcpLibraryOpen] = useState(false);
+  const {
+    uploadFiles,
+    uploadFolders,
+    fileResponse,
+    fileStatus,
+    lastModifiedFiles,
+    validExtensions,
+    displayFileError,
+    cancelFileUpload,
+  } = useContext(FileManagementContext);
   let unlistenFileDrop, unlistenFileDropHover, unlistenFileDropCancelled;
   const { isChatReady } = useContext(ChatContext);
   const [componentVisibility, setComponentVisibility] = useState(false);
@@ -33,7 +47,7 @@ const DragAndDrop = () => {
 
   useEffect(() => {
     setComponentVisibility(config.is_admin);
-  }, [config])
+  }, [config]);
 
   const toggleDragAndDropVisibility = () =>
     setDragAndDropIsVisible(!isDragAndDropVisible);
@@ -41,6 +55,10 @@ const DragAndDrop = () => {
     setIsLibraryOpen(true);
   };
   const closeLibrary = () => setIsLibraryOpen(false);
+
+  const openMcpLibrary = () => {
+    useMcpStore.getState().openMcpManagement();
+  };
 
   useEffect(() => {
     if (isDragAndDropVisible) {
@@ -54,15 +72,11 @@ const DragAndDrop = () => {
           console.log("Not ready for drag and drop yet.");
           displayFileError();
         }
-
       });
 
-      unlistenFileDropCancelled = listen(
-        "tauri://drag-leave",
-        (event) => {
-          console.log("File drop cancelled");
-        }
-      );
+      unlistenFileDropCancelled = listen("tauri://drag-leave", (event) => {
+        console.log("File drop cancelled");
+      });
     }
 
     return () => {
@@ -116,8 +130,8 @@ const DragAndDrop = () => {
             src="/images/dragndrop/normal_u169.png"
             alt="Drag and Drop"
           />
-          <div className='drag-and-drop-files'>
-            <p className="dragndrop-large-text">{t('draganddrop.area')}</p>
+          <div className="drag-and-drop-files">
+            <p className="dragndrop-large-text">{t("draganddrop.area")}</p>
             <p className="dragndrop-small-text">
               {/* Limit 1 GB per file <br /> */}
               {validExtensions.map((ext) => ext.toUpperCase()).join(", ")}
@@ -126,7 +140,7 @@ const DragAndDrop = () => {
 
 
           <div className="drag-and-drop-status dragndrop-small-text error">
-            {(fileStatus === "completed") && (
+            {fileStatus === "completed" && (
               <p className="dragndrop-small-text">{fileResponse}</p>
             )}
             {(fileStatus === "uploading" || fileStatus === "removing" ||
@@ -201,6 +215,7 @@ const DragAndDrop = () => {
               onClose={closeLibrary}
               onOpen={openLibrary}
             />
+            {mcpManagementOpen && <McpManagement />}
           </div>
         </div>
       )}

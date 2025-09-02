@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import SimpleAccordion from "../accordion/SimpleAccordion";
 import { Typography, Card } from "@mui/material";
 import MemoryIcon from '@mui/icons-material/Memory';  // for CPU

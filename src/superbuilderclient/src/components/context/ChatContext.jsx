@@ -1,60 +1,35 @@
-import { invoke } from "@tauri-apps/api/core";
+﻿import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useState, createContext, useEffect, useContext, React } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { RagReadyContext } from "./RagReadyContext";
 import { produce } from "immer";
-import { FileManagementContext } from "./FileManagementContext";
-import Chip from "@mui/material/Chip";
-import GeneralFileQueryIcon from "@mui/icons-material/TopicTwoTone";
-import ImageQueryIcon from "@mui/icons-material/PhotoCameraTwoTone";
-import ImageGenerationIcon from "@mui/icons-material/PhotoTwoTone";
-import SummarizeQueryIcon from "@mui/icons-material/SummarizeTwoTone";
-import TableQueryIcon from "@mui/icons-material/TableChartTwoTone";
-import ResumeQueryIcon from "@mui/icons-material/ArticleTwoTone";
-import ClearQueryIcon from "@mui/icons-material/Clear";
-import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
-import { styled } from "@mui/material/styles";
-import Zoom from "@mui/material/Zoom";
-import { Switch } from "@mui/material";
 import useDataStore from "../../stores/DataStore";
 import { useTranslation } from 'react-i18next';
+import { WorkflowContext } from "./WorkflowContext";
+import { AppStatusContext } from "./AppStatusContext";
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
   const { ready: ragReady } = useContext(RagReadyContext);
-  const { updateTable } = useContext(FileManagementContext);
+  const {isAppReady : isChatReady, setIsAppReady : setIsChatReady} = useContext(AppStatusContext); // for now chat ready just means app is ready
+  const { setWorkflow, buildPromptRequest } = useContext(WorkflowContext);
   const [sessions, setSessions] = useState([]);
   const [selectedSession, setSelectedSession] = useState(0);
+  const [sessionSwitched, setSessionSwitched] = useState(false); // notifies other components of session switch even if session doesn't change, value doesn't matter
   const [isWaitingForFirstToken, setWaitingForFirstToken] = useState(false);
   const [isStreamCompleted, setStreamCompleted] = useState(true);
   const [messages, setMessages] = useState([]);
-  const [isChatReady, setIsChatReady] = useState(false);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false); // only load chat history on start
   const [modelLoaded, setModelLoaded] = useState(false); // keep track for cold start status
-  const [attachedFiles, setAttachedFiles] = useState([]);
-  const [attachedFileNames, setAttachedFileNames] = useState([]);
-  const [attachedFileQueryType, setAttachedFileQueryType] = useState("");
-  const validImageQueryExtensions = ["jpg", "jpeg", "png"];
-  const validTableQueryExtensions = ["xlsx", "csv"];
-  const validSummarizeQueryExtensions = ["pdf", "docx", "txt"];
-  const validResumeQueryExtensions = ["pdf", "docx", "txt"];
-  const validGeneralQueryExtensions = [
-    "pdf",
-    "docx",
-    "txt",
-    "md",
-    "pptx",
-    "xlsx",
-    "csv",
-  ];
   const [chatHistorySize, setChatHistorySize] = useState(0); // changing will not do anything, controlled by MW config DB
-  const { assistant, enableAllFeature, setEnableAllFeature } = useDataStore(); // Access assistant from useDataStore
-  const [newChatModelNeeded,setNewChatModelNeeded] = useState(false); //control to allow selecting new model when chat load 
+  const { assistant } = useDataStore(); // Access assistant from useDataStore
+  const [newChatModelNeeded,setNewChatModelNeeded] = useState(false); //control to allow selecting new model when chat load
   const[isModelSettingsReady,setIsModelSettingsReady] = useState(true);
   const { t } = useTranslation();
-  const [fileLengthError, setFileLengthError] = useState(""); //
   const [useSemanticSplitter, setUseSemanticSplitter] = useState(0); // changing will not do anything, controlled by MW config DB
+  const [useAllFiles, setUseAllFiles] = useState(0); // set from config, always selects all files to be active whenever possible
+
   // Extract chatHistorySize from assistant.parameters
   useEffect(() => {
     const fetchChatHistorySizeFromParameters = () => {
@@ -67,12 +42,12 @@ export const ChatProvider = ({ children }) => {
         const otherCategory = parameters.categories.find(
           (category) => category.name === "other"
         ); // Find the "other" category
-        
+
         if (otherCategory) {
           const conversationHistoryField = otherCategory.fields.find(
             (field) => field.name === "conversation_history"
           ); // Find the "conversation_history" field
-          
+
           if (conversationHistoryField && conversationHistoryField.user_value) {
             setChatHistorySize(conversationHistoryField.user_value); // Set chatHistorySize
             console.log(
@@ -92,6 +67,17 @@ export const ChatProvider = ({ children }) => {
               conversationHistoryField.user_value
             );
           }
+
+          const useAllFilesField = otherCategory.fields.find(
+            (field) => field.name === "use_all_files"
+          );
+          if (useAllFilesField && useAllFilesField.user_value != null) {
+            setUseAllFiles(useAllFilesField.user_value);
+            console.log(
+              "Loaded use_all_files from assistant.parameters:",
+              useAllFilesField.user_value
+            );
+          }
         }
       } catch (error) {
         console.error("Failed to fetch chatHistorySize from parameters:", error);
@@ -105,7 +91,9 @@ export const ChatProvider = ({ children }) => {
     if (!isChatReady) {
       return;
     }
+
     if (selectedSession === sessionId) {
+      setSessionSwitched(!sessionSwitched);
       return;
     }
     const selectedIdx = sessions.findIndex(
@@ -123,31 +111,13 @@ export const ChatProvider = ({ children }) => {
     setSessions(newSessions);
     setMessages([...newSessions[nextSessionIndex].messages]);
     setSelectedSession(sessionId);
-
-    const newMessages = newSessions[nextSessionIndex].messages;
-    if (newMessages.length > 0) {
-      const lastMessage = newMessages[newMessages.length - 1];
-      const lastNonEmptyAttachedFilesMessage = newMessages
-        .slice()
-        .reverse()
-        .find(
-          (message) => message.attachedFiles && message.attachedFiles.length > 0
-        );
-
-      if (lastNonEmptyAttachedFilesMessage) {
-        setAttachedFiles(lastNonEmptyAttachedFilesMessage.attachedFiles);
-        setAttachedFileNames(
-          getAttachedFileNames(lastNonEmptyAttachedFilesMessage.attachedFiles)
-        );
-      } else {
-        setAttachedFiles([]);
-        setAttachedFileNames([]);
-      }
-      setAttachedFileQueryType(lastMessage.queryType);
-    } else {
-      setAttachedFiles([]);
-      setAttachedFileQueryType("");
+    if (newSessions[nextSessionIndex].messages.length > 0) {
+      const firstMessage = newSessions[nextSessionIndex].messages[0];
+      console.log(firstMessage.queryType);
+      let queryName = firstMessage.queryType.name || ""; // try and get query name
+      setWorkflow(queryName === "" ? "Generic" : queryName); // set workflow to this session's special query type
     }
+    setSessionSwitched(!sessionSwitched);
   };
 
   const setSessionName = async (sessionId, sessionName) => {
@@ -175,6 +145,7 @@ export const ChatProvider = ({ children }) => {
       console.log(
         "Unable to add new session: current session is already empty."
       );
+      setSessionSwitched(!sessionSwitched);
       return;
     }
 
@@ -208,11 +179,7 @@ export const ChatProvider = ({ children }) => {
     );
     setMessages([...newSession.messages]);
     setSelectedSession(newSessionId);
-
-    // new session starts with no specific query on temporary files
-    setAttachedFileQueryType("");
-    setAttachedFiles([]);
-
+    setSessionSwitched(!sessionSwitched);
     console.log("New session added with id of: ", newSessionId);
   };
 
@@ -326,13 +293,16 @@ export const ChatProvider = ({ children }) => {
         if (!isSubscribed) {
           return;
         }
+        let chatResponse = JSON.parse(event.payload);
+        // console.log(chatResponse);
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages];
           const lastIndex = updatedMessages.length - 1;
           if (lastIndex >= 0) {
             updatedMessages[lastIndex] = {
               ...updatedMessages[lastIndex],
-              text: updatedMessages[lastIndex].text + event.payload,
+              text: updatedMessages[lastIndex].text + chatResponse.message,
+              references: chatResponse.references,
             };
           }
           return updatedMessages;
@@ -380,12 +350,19 @@ export const ChatProvider = ({ children }) => {
           var newMessages = [];
           for (let j = 0; j < session.messages.length; j++) {
             var m = session.messages[j];
+            let queryData;
+            try {
+              queryData = JSON.parse(m.query_type); // attempt to parse as JSON
+            } catch (e) {
+              queryData = {name: m.query_type}; // fallback to string value
+            }
             var newMessage = {
               id: m.timestamp,
               text: m.text,
               sender: m.sender,
-              attachedFiles: JSON.parse(m.attached_files), // for now parse all file lists..
-              queryType: m.query_type,
+              queryType: queryData,
+              references: m.references ? m.references : [], // set references if they exist, otherwise empty list
+              attachedFiles: JSON.parse(m.attached_files), // set attached files if they exist
             };
             newMessages.push(newMessage);
           }
@@ -437,19 +414,6 @@ export const ChatProvider = ({ children }) => {
     let messageHistory = [];
     for (let i = messageSlice.length - 1; i >= 0; i--) {
       let currentMessage = messageSlice[i];
-
-      // When there is a query type, only add chat history up to ChatHistorySize with the same attachements
-      if (
-        attachedFileQueryType !== "" &&
-        (attachedFiles !== currentMessage.attachedFiles ||
-          attachedFileQueryType !== currentMessage.queryType)
-      ) {
-        console.log(
-          attachedFiles + " is not same as " + currentMessage.attachedFiles
-        );
-        break; // exit since no longer same attachments in message chain
-      }
-
       // append message and return if at message size limit
       messageHistory.push(currentMessage);
       if (messageHistory.length >= messageSliceSize) {
@@ -459,22 +423,7 @@ export const ChatProvider = ({ children }) => {
     return messageHistory.reverse(); // reverse to be in correct order for backend
   };
 
-  const findLastUserMessage = (messages) => {
-    var lastUserMessageIndex = null;
-    var result = {};
-
-    for (let i = 0; i < messages.length; i++) {
-      if (messages[i].sender === "user") {
-        lastUserMessageIndex = i;
-      }
-    }
-    if (lastUserMessageIndex != null) {
-      result = messages[lastUserMessageIndex];
-    }
-    return result;
-  };
-
-  const sendMessage = async (input, resubmitIndex = -1) => {
+  const sendMessage = async (input, resubmitIndex = -1, selectedFiles=[], queryType={name: "Generic"}) => {
     let previousMessages = messages;
 
     // If resubmitting, only use chat messages before resubmission as chat history
@@ -484,7 +433,7 @@ export const ChatProvider = ({ children }) => {
 
     // get double chatHistorySize to account for q&a pairs
     previousMessages = getChatMessages(previousMessages, chatHistorySize * 2);
-    console.warn("previous", messages);
+    // console.warn("previous", messages);
 
     // format messages properly for API
     let contextHistory = [];
@@ -494,52 +443,22 @@ export const ChatProvider = ({ children }) => {
       }
     });
 
-    if (Array.isArray(input)) {
-      input = input.join("");
-    }
-
-    // use the resubmission question's query type and attached files if it exists
-    let currentAttachedFiles = attachedFiles;
-    let currentQueryType = attachedFileQueryType;
-    if (resubmitIndex != -1) {
-      let resubmitMessage = messages[resubmitIndex];
-      currentAttachedFiles = resubmitMessage.attachedFiles;
-      currentQueryType = resubmitMessage.queryType;
-
-      // update future messages to use resubmission attachments and query type
-      setAttachedFiles(currentAttachedFiles);
-      setAttachedFileQueryType(currentQueryType);
-      setAttachedFileNames(getAttachedFileNames(currentAttachedFiles));
-    }
-
-    console.log("Input:", input);
     const newMessage = {
       id: new Date().getTime(),
       text: input,
       sender: "user",
-      queryType: currentQueryType, // type of query to perform on attached files (empty if none)
-      attachedFiles: currentAttachedFiles, // set attached files specific to this query
+      queryType: queryType,
+      attachedFiles: selectedFiles,
     };
-
-    // if previous user message and new message has the same query type
-    // we want to assume the user is asking a follow up question
-    // so we want to attach the same files to the new message
-    var last_message = findLastUserMessage(messages);
-    if (
-      last_message.queryType === currentQueryType &&
-      newMessage.attachedFiles.length == 0
-    ) {
-      newMessage.attachedFiles = last_message.attachedFiles;
-      console.log(`reattach file to new message : ${newMessage.attachedFiles}`);
-    }
 
     const responseMessage = {
       id: new Date().getTime() + 1,
       text: "",
       sender: "assistant",
-      queryType: currentQueryType,
-      attachedFiles: currentAttachedFiles, // set attached files specific to this query
+      queryType: queryType,
+      attachedFiles: selectedFiles,
     };
+
     if (messages.length <= 2) {
       setSessions(
         produce(sessions, (draft) => {
@@ -550,6 +469,9 @@ export const ChatProvider = ({ children }) => {
         })
       );
     }
+
+    const promptOptions = buildPromptRequest(queryType);
+
     setMessages([...messages, newMessage, responseMessage]);
     setWaitingForFirstToken(true);
     setStreamCompleted(false);
@@ -560,22 +482,25 @@ export const ChatProvider = ({ children }) => {
         "\nChat History: ",
         contextHistory,
         "\nSession ID: ",
-        selectedSession.toString()
+        selectedSession.toString(),
+        "\nAttached Files: ",
+        selectedFiles.toString(),
+        "\nPrompt Options: ",
+        promptOptions,
       );
       await invoke("call_chat", {
         name: "UI",
         prompt: input,
         conversationHistory: contextHistory,
         sid: selectedSession,
-        query: currentQueryType,
-        files: JSON.stringify(currentAttachedFiles),
+        files: JSON.stringify(selectedFiles),
+        promptOptions: promptOptions,
       });
     } catch (error) {
       console.error(error);
     } finally {
       setWaitingForFirstToken(false);
       setStreamCompleted(true);
-      setAttachedFiles([]);
     }
   };
 
@@ -592,258 +517,6 @@ export const ChatProvider = ({ children }) => {
       return fileName;
     }
     return fileName.substring(0, lengthLimit) + "...";
-  };
-
-  const getAttachedFileNames = (filepaths) => {
-    let filepathNames = [];
-    filepaths.forEach((filepath) => {
-      let filepathName = getFileName(filepath, 50);
-      filepathNames.push(filepathName);
-    });
-    return filepathNames;
-  };
-
-  // Prompt user to attach files to current chat query
-  const setAttachmentFiles = async (attachmentType) => {
-    let fileLengthLimit = -1; // use all files if set to -1
-    let allowedFileExtensions = [];
-    let filePathDialogTitle = ""
-    switch (attachmentType) {
-      case "image":
-        fileLengthLimit = 3;
-        allowedFileExtensions = validImageQueryExtensions;
-        filePathDialogTitle = t('chat.attach.file_path_dialog_title_image')
-        break;
-      case "table":
-        fileLengthLimit = 1;
-        allowedFileExtensions = validTableQueryExtensions;
-        filePathDialogTitle = t('chat.attach.file_path_dialog_title_table')
-        break;
-      case "summarize":
-        fileLengthLimit = 3;
-        allowedFileExtensions = validSummarizeQueryExtensions;
-        filePathDialogTitle = t('chat.attach.file_path_dialog_title_summarize')
-        break;
-      case "resume":
-        fileLengthLimit = Infinity;
-        allowedFileExtensions = validResumeQueryExtensions;
-        filePathDialogTitle = t('chat.attach.file_path_dialog_title_resume')
-        break;
-      default:
-        fileLengthLimit = 3;
-        allowedFileExtensions = validGeneralQueryExtensions;
-        filePathDialogTitle = t('chat.attach.file_path_dialog_title_summarize')
-    }
-
-    let filepaths = await open({
-      title: "Select file(s) for " + attachmentType + " query",
-      multiple: true,
-      directory: false,
-      filters: [
-        {
-          name: "Files",
-          extensions: allowedFileExtensions, // Filter by extension
-        },
-      ],
-    });
-
-    if (!filepaths) {
-      console.log("Attachment canceled.");
-      return 0; // canceled so return 0 files attached
-    }
-
-    if (fileLengthLimit > -1 && filepaths.length > fileLengthLimit) {
-      filepaths = filepaths.splice(0, fileLengthLimit);
-      setFileLengthError(`Maximum of only ${fileLengthLimit} file(s) allowed.`);
-    } else {
-      setFileLengthError("");
-    }
-
-    console.log("Attaching files: " + filepaths);
-    setAttachedFiles(filepaths); // set the current attached files
-    setAttachedFileQueryType(attachmentType);
-
-    // Convert the array into a string with ", " between filenames
-    setAttachedFileNames(getAttachedFileNames(filepaths));
-
-    return filepaths.length; // files selected, return the amount attached
-  };
-
-  const generalFileFeature = (_onclick) => {
-    return (
-      <Chip
-        className="file-query-chip"
-        icon=<GeneralFileQueryIcon className="file-attachment-icon" />
-        label="Query Documents"
-        variant="outlined"
-        color="primary"
-        size="medium"
-        onClick={_onclick}
-      />
-    );
-  };
-
-  const LightTooltip = styled(
-    ({ className, placement = "top-start", ...props }) => (
-      <Tooltip
-        {...props}
-        arrow
-        placement={placement}
-        classes={{ popper: className }}
-        slots={{ transition: Zoom }}
-      />
-    )
-  )(({ theme }) => ({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: "rgba(238, 238, 238, 0.87)",
-      color: "rgba(0, 0, 0, 0.87)",
-      boxShadow: theme.shadows[1],
-      fontSize: 11,
-    },
-  }));
-
-  const QueryFeature = ({label, description, icon, query, _onclick}) => {
-    return (
-      <LightTooltip title={description}>
-        <Chip
-          className="file-query-chip"
-          icon={icon}
-          label={label}
-          variant={query === attachedFileQueryType ? "filled" : "outlined"}
-          color="primary"
-          size="medium"
-          onClick={_onclick}
-        />
-      </LightTooltip>
-    );
-  };
-
-  const SummarizeQueryFeature = (_onclick) => {
-    return (
-      <QueryFeature
-        label={t('chat.attach.summary')}
-        description={t('chat.attach.summary_tips')}
-        icon={<SummarizeQueryIcon className="file-attachment-icon" />}
-        query="summarize"
-        _onclick={_onclick}
-      />
-    );
-  };
-
-  const tableFeature = (_onclick) => {
-    return (
-      <QueryFeature
-        label={t('chat.attach.data')}
-        description={t('chat.attach.data_tips')}
-        icon={<TableQueryIcon className="file-attachment-icon" />}
-        query="table"
-        _onclick={_onclick}
-      />
-    );
-  };
-
-  const imageFeature = (_onclick) => {
-    return (
-      <QueryFeature
-        label={t('chat.attach.images')}
-        description={t('chat.attach.images_tips')}
-        icon={<ImageQueryIcon className="file-attachment-icon" />}
-        query="image"
-        _onclick={_onclick}
-      />
-    );
-  };
-
-  const generateImageFeature = (_onclick) => {
-    return (
-      <Chip
-        className="file-query-chip"
-        icon={<ImageGenerationIcon className="file-attachment-icon" />}
-        label={t('chat.attach.generate_images')}
-        variant="outlined"
-        color="primary"
-        size="medium"
-        onClick={_onclick}
-      />
-    );
-  };
-
-  const resumeFeature = (_onclick) => {
-    return (
-      <QueryFeature
-        label={t('chat.attach.resume')}
-        description={t('chat.attach.resume_tips')}
-        icon={<ResumeQueryIcon className="file-attachment-icon" />}
-        query="resume"
-        _onclick={_onclick}
-      />
-    );
-  };
-
-  const clearFeature = (_onclick) => {
-    return (
-      <LightTooltip title={t('chat.attach.clear_tips')}>
-        <Chip
-          className="file-query-chip"
-          icon={<ClearQueryIcon className="file-attachment-icon" />}
-          label={t('chat.attach.clear')}
-          variant="outlined"
-          color="default"
-          size="medium"
-          onClick={_onclick}
-        />
-      </LightTooltip>
-    );
-  };
-
-  const enableAllFeatures = (_onclick) => {
-    const _handleCheckbox = () => {
-      _onclick(!enableAllFeature);
-
-      // set checkbox state to opposite of current state
-      setEnableAllFeature(!enableAllFeature);
-    };
-
-    return (
-      <Chip
-        className="file-query-chip"
-        label={t('chat.attach.all_features')}
-        variant="outlined"
-        color="primary"
-        size="medium"
-        onClick={_handleCheckbox}
-        icon={<Switch checked={enableAllFeature} color="primary" />}
-      />
-    );
-  };
-
-  const renderChatFeature = (listOfFeature, onclickFunctions = {}) => {
-    return (
-      <>
-        {listOfFeature.includes("GeneralFile")
-          ? generalFileFeature(onclickFunctions["GeneralFile"])
-          : null}
-        {listOfFeature.includes("Summarize")
-          ? SummarizeQueryFeature(onclickFunctions["SummarizeQuery"])
-          : null}
-        {listOfFeature.includes("Table")
-          ? tableFeature(onclickFunctions["Table"])
-          : null}
-        {listOfFeature.includes("Image")
-          ? imageFeature(onclickFunctions["Image"])
-          : null}
-        {listOfFeature.includes("GenImage")
-          ? generateImageFeature(onclickFunctions["GenImage"])
-          : null}
-        {listOfFeature.includes("Resume")
-          ? resumeFeature(onclickFunctions["Resume"])
-          : null}
-        {enableAllFeatures(onclickFunctions["EnableAllFeatures"])}
-        {listOfFeature.includes("Clear")
-          ? clearFeature(onclickFunctions["Clear"])
-          : null}
-      </>
-    );
   };
 
   return (
@@ -866,20 +539,12 @@ export const ChatProvider = ({ children }) => {
         setChatHistorySize,
         setUseSemanticSplitter,
         setSessionName,
-        setAttachmentFiles,
-        attachedFiles,
-        attachedFileQueryType,
-        setAttachedFileQueryType,
-        setAttachedFiles,
-        attachedFileNames,
         getFileName,
-        renderChatFeature,
         newChatModelNeeded,
         setNewChatModelNeeded,
         setIsModelSettingsReady,
-        fileLengthError,
-        setFileLengthError,
-        LightTooltip,
+        sessionSwitched,
+        useAllFiles,
       }}
     >
       {children}

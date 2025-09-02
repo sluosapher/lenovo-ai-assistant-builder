@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useContext, use } from "react";
+﻿import React, { useState, useEffect, useContext, use } from "react";
 import "./Setting.css";
 import Notification from "../notification/Notification";
 import { invoke } from "@tauri-apps/api/core";
+import { emit } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog"; // Import the Tauri dialog API
 import { RagReadyContext } from "../context/RagReadyContext";
 import { ModelDownloaderContext } from "../context/ModelDownloaderContext";
 import { ChatContext } from "../context/ChatContext";
 import ModalWrapper from "../generalUseModal/generalUseModal";
-import { ModelSettings, HighLowTooltipDescription } from "./ModelSettings";
+import { ModelSettings } from "./ModelSettings";
+import HighLowTooltipDescription from "../tooltip/HighLowTooltipDescription";
 import SimpleAccordion from "../accordion/SimpleAccordion";
 import {
   Radio,
@@ -33,10 +35,13 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import modelStructureImage1 from "../../assets/images/model-structure-1.png";
 import FluidModal from "../FluidModal/FluidModal";
 import AssistantLogo from "../assistantLogo/assistantLogo";
+
+import ModelSelection from "./ModelSelection";
 import { SystemInfoCard } from "./SystemInfo";
+import ConfImportExport from "./ConfImportExport";
 
 import useDataStore from "../../stores/DataStore";
-import ConfImportExport from "./ConfImportExport";
+
 import useModelStore from "../../stores/ModelStore";
 
 import { getSystemLanguage } from "../../i18n";
@@ -59,8 +64,6 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
   } = useDataStore();
 
   const { t } = useTranslation();
-  const { hfModelDialogOpen, setHFModelDialogOpen } = useModelStore();
-  const [isAutoUpdate, setAutoUpdate] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { ready, setReady } = useContext(RagReadyContext);
   const { isChatReady, setisChatReady, newChatModelNeeded } =
@@ -84,6 +87,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
   const toggleUploadModelInfo = () =>
     setIsUploadModelInfoOpen(!isUploadModelInfoOpen);
   const [assistantLogoImage, setAssistantLogoImage] = useState("default");
+
   useEffect(() => {
     if (assistant) {
       setUIColorSelected(assistant[uiColorSelectedConfig]);
@@ -128,23 +132,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
       short_name: item.short_name,
     })
   );
-  const getIndexByModel = (model, modelType) => {
-    let result;
-    switch (modelType) {
-      case "chat_model":
-        result = combinedModels.find((item) => item.label === model);
-        break;
-      case "ranker_model":
-        result = rankerModels.find((item) => item.label === model);
-        break;
-      case "embedding_model":
-        result = embeddingModels.find((item) => item.label === model);
-        break;
-      default:
-        result = null;
-    }
-    return result ? result.key.toString() : null;
-  };
+
   const recommendedShortNames = new Set(
     recommendedModel.map((item) => item.short_name)
   );
@@ -256,6 +244,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           full_name: selectedModel.label,
           short_name: selectedModel.label,
           model_type: modelType,
+          model_creator_type: "UserCreated",
         };
         const updatedAllModels = assistant.all_models
           ? [...assistant.all_models, newModel]
@@ -300,7 +289,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           ? "顶部背景"
           : i18n.language === "zh-Hant"
             ? "頂部背景"
-            : "Header Background",
+            : "Primary Color",
     },
     {
       key: "header_text_bg_color",
@@ -309,7 +298,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           ? "顶部文字和图标"
           : i18n.language === "zh-Hant"
             ? "頂部文字和圖標"
-            : "Header Text & Icons",
+            : "Primary Text & Icons Color",
     },
     {
       key: "sidebar_box_bg_color",
@@ -318,27 +307,10 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           ? "侧边栏背景"
           : i18n.language === "zh-Hant"
             ? "側邊列背景"
-            : "Sidebar Background",
-    },
-    {
-      key: "sidebar_box_refresh_bg_color",
-      label:
-        i18n.language === "zh-Hans"
-          ? "历史按钮"
-          : i18n.language === "zh-Hant"
-            ? "歷史按鈕"
-            : "History Button",
-    },
-    {
-      key: "sidebar_box_refresh_hover_bg_color",
-      label:
-        i18n.language === "zh-Hans"
-          ? "历史按钮悬停"
-          : i18n.language === "zh-Hant"
-            ? "歷史按鈕懸停"
-            : "History Button Hover",
+            : "Secondary Color",
     },
   ];
+
 
   const updateUIColorConfiguration = async (resetUXSettings) => {
     setAssistantConfigUpdating(true);
@@ -371,26 +343,30 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
       vm: JSON.stringify(newData.ActiveAssistant),
       resetUxSettings: resetUXSettings,
     });
+    if (resetUXSettings) {
+      await updateAssistantName(true); // make sure assistant name also resets
+    }
     await useDataStore.getState().getDBConfig();
+    emit('assistant-config-updated'); // make sure appearance changes propagate to separate app windows
     setAssistantConfigUpdating(false);
   };
 
-  const updateAssistantName = async () => {
-    if (assistant.full_name === assistantName) {
+  const updateAssistantName = async (resetName=false) => {
+    if (assistant.full_name === assistantName && !resetName) {
       return;
-    } else if (assistantName.trim().length === 0) {
+    } else if (assistantName.trim().length === 0 || resetName) {
       switch (assistant.short_name) {
         case "HR":
-          setAssistantName("Human Resources - Intel® AI Assistant Builder");
+          setAssistantName("Human Resources - IntelÂ® AI Assistant Builder");
           break;
         case "SA":
-          setAssistantName("Sales Assistant - Intel® AI Assistant Builder");
+          setAssistantName("Sales Assistant - IntelÂ® AI Assistant Builder");
           break;
         case "MA":
-          setAssistantName("Medical Assistant - Intel® AI Assistant Builder");
+          setAssistantName("Medical Assistant - IntelÂ® AI Assistant Builder");
           break;
         case "FA":
-          setAssistantName("Finance Assistant - Intel® AI Assistant Builder");
+          setAssistantName("Finance Assistant - IntelÂ® AI Assistant Builder");
           break;
       }
     }
@@ -480,63 +456,6 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
 
       setModelUploading(false);
     }
-  };
-
-  const downloadOptions = [
-    {
-      key: "huggingface",
-      label: "https://huggingface.co",
-      url: "https://huggingface.co",
-    },
-    {
-      key: "hf-mirror",
-      label: "https://hf-mirror.com",
-      url: "https://hf-mirror.com",
-    },
-    {
-      key: "www.modelscope.cn",
-      label: "https://www.modelscope.cn",
-      url: "https://www.modelscope.cn",
-    },
-  ];
-
-  const handleDownloadSelectionChange = async (selectedKey) => {
-    const backupEndpoint = config.download_endpoint;
-    try {
-      setReady(false);
-      const selectedOption = downloadOptions.find(
-        (option) => option.key === selectedKey
-      );
-      if (selectedOption && selectedOption.url !== config.download_endpoint) {
-        setDownloadEndpoint(selectedOption.url);
-        //shallow data to avoid passing extra userconfig nested fields such as an assistant object to the MW.
-        const shallowNewData = Object.keys(config).reduce((acc, key) => {
-          if (typeof config[key] !== "object" || config[key] === null) {
-            acc[key] = config[key];
-          }
-          return acc;
-        }, {});
-        shallowNewData.download_endpoint = selectedOption.url;
-        const viewModel = JSON.stringify(shallowNewData);
-        await invoke("set_user_config_view_model", { vm: viewModel });
-      }
-    } catch (error) {
-      setDownloadEndpoint(backupEndpoint); //revert change
-    }
-    setReady(true);
-  };
-
-  const dropDownMenuSetModelHandler = (model_type) => {
-    return (event) => setModel(event, model_type);
-  };
-
-  const getDropdownItems = (modelType) => {
-    const models = getFilteredModels(modelType);
-    return models.map((item, index) => ({
-      key: index + 1,
-      label: item.full_name,
-      short_name: item.short_name,
-    }));
   };
 
   const handleUploadLogo = async () => {
@@ -681,7 +600,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
         toggleOpen={toggleModal}
         assistant={assistant}
       />
-      
+
       <FluidModal
         open={isUploadModelInfoOpen}
         handleClose={toggleUploadModelInfo}
@@ -702,7 +621,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
             value={assistantName}
             onChange={handleInputChange}
             onKeyDown={handleRenameKeyDown}
-            onBlur={updateAssistantName}
+            onBlur={() => updateAssistantName()}
             disabled={configUpdating}
             InputProps={{
               endAdornment: (
@@ -728,8 +647,8 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
             <div className="logo-setting-container">
               <div className="logo-display">
                 <AssistantLogo />
-              </div>              
-                <Button                  
+              </div>
+                <Button
                   variant="contained"
                   style={{ width: "100%" }}
                   onClick={() => {
@@ -840,109 +759,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           title={t("setting.models.title")}
           description={t("setting.models.description")}
         >
-          <Card orientation="vertical" className="model-switch-card">
-            <FormControl fullWidth>
-              <InputLabel>{t("setting.models.current.currentllm")}</InputLabel>
-              <Select
-                className="model-switch-dropdown"
-                value={getIndexByModel(assistant.models.chat_model, "chat_model")}
-                label={t("setting.models.current.currentllm")}
-                onChange={(e) => dropDownMenuSetModelHandler("chat_model")(e.target.value)}
-                disabled={modelUploadDisabled}
-              >
-                {combinedModels.map((i, idx) => 
-                  i.key === "divider" ? (
-                    <MenuItem 
-                      key={`divider-${idx}`} 
-                      disabled
-                      sx={{ 
-                        borderTop: '1px solid #ccc',
-                        margin: '4px 0'
-                      }}
-                    >
-                      {i.content}
-                    </MenuItem>
-                  ) : (
-                    <MenuItem key={i.key} value={i.key}>
-                      {i.label}
-                    </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="caption">
-                {t("setting.models.current.currentllm_tips")}
-              </Typography>
-            </FormControl>
-          </Card>
-          <Card orientation="vertical" className="model-switch-card">
-            <FormControl fullWidth>
-              <InputLabel>{t("setting.models.current.embedding")}</InputLabel>
-              <Select
-                className="model-switch-dropdown"
-                value={getIndexByModel(assistant.models.embedding_model, "embedding_model")}
-                label={t("setting.models.current.embedding")}
-                onChange={(e) => dropDownMenuSetModelHandler("embedding_model")(e.target.value)}
-                disabled={modelUploadDisabled}
-              >
-                {getDropdownItems("embedding_model").map((i) => (
-                  <MenuItem key={i.key} value={i.key}>
-                    {i.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="caption">
-                {t("setting.models.current.embedding_tips")}
-              </Typography>
-            </FormControl>
-          </Card>
-          <Card orientation="vertical" className="model-switch-card">
-            <FormControl fullWidth>
-              <InputLabel>{t("setting.models.current.ranker")}</InputLabel>
-              <Select
-                className="model-switch-dropdown"
-                value={getIndexByModel(assistant.models.ranker_model, "ranker_model")}
-                label={t("setting.models.current.ranker")}
-                onChange={(e) => dropDownMenuSetModelHandler("ranker_model")(e.target.value)}
-                disabled={modelUploadDisabled}
-              >
-                {getDropdownItems("ranker_model").map((i) => (
-                  <MenuItem key={i.key} value={i.key}>
-                    {i.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="caption">
-                {t("setting.models.current.ranker_tips")}
-              </Typography>
-            </FormControl>
-          </Card>
-
-          <Card orientation="vertical" className="model-switch-card">
-            <FormControl fullWidth>
-              <InputLabel>{t("setting.models.current.endpoint")}</InputLabel>
-              <Select
-                value={downloadOptions.find(
-                  (option) => option.url === config.download_endpoint
-                )?.key}
-                label={t("setting.models.current.endpoint")}
-                onChange={(event) => handleDownloadSelectionChange(event.target.value)}
-                disabled={!ready && !isChatReady && !waitingForConsent && !newChatModelNeeded}
-              >
-                {downloadOptions.map((downloadOption) => (
-                  <MenuItem
-                    key={downloadOption.key}
-                    value={downloadOption.key}
-                  >
-                    {downloadOption.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Typography variant="caption" color="textSecondary">
-                {t("setting.models.current.endpoint_tips1")}
-                <br />
-                {t("setting.models.current.endpoint_tips2")}
-              </Typography>
-            </FormControl>
-          </Card>
+          <ModelSelection />
 
           <Card orientation="vertical" className="model-switch-card">
             <div className="info-container">
@@ -952,7 +769,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
                   onClick={toggleUploadModelInfo}
                   isButton={true}
                 />
-                <Typography variant="h6" >
+                <Typography>
                   {t("setting.models.upload.title")}
                 </Typography>
               </div>
@@ -1046,7 +863,7 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
           <Card orientation="vertical" className="model-switch-card">
             <Button
               variant="contained"
-                  sx={{display: "flex", width: "100%", marginBottom:0.5}}
+              sx={{display: "flex", width: "100%", marginBottom:0.5}}
               onClick={openHFDownloadWindow}
               startIcon={<TransformIcon />}
               disabled={

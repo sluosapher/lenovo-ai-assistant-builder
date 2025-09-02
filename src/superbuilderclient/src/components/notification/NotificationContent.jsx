@@ -1,4 +1,4 @@
-import "./NotificationContent.css";
+﻿import "./NotificationContent.css";
 import ai_assistant_builder_icon from "../../assets/images/icon.png";
 import MarkdownRenderer from "../../helpers/MarkdownRenderer";
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,6 @@ const NotificationContent = ({
   version,
   date,
   release_notes,
-  setReturnButtonName,
   installedVersion,
   isUpdateRequired,
 }) => {
@@ -18,18 +17,15 @@ const NotificationContent = ({
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>{t('notification.fetch_update')}</p>
-          {setReturnButtonName("Cancel")}
         </div>
       )}
       {version == "error" && (
         <div className="loading-container">
           <p>{t('notification.failed_to_fetch_update')}</p>
-          {setReturnButtonName("Cancel")}
         </div>
       )}
       {version != "version" && version != "error" && (
         <>
-          {setReturnButtonName("OK")}
 
           <div className="ai_assistant_builder_header">
             <div className="flex-container">

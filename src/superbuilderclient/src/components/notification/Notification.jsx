@@ -1,4 +1,4 @@
-import NotificationContent from "./NotificationContent";
+﻿import NotificationContent from "./NotificationContent";
 import React, { useEffect, useState, useContext } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { compareVersions } from "compare-versions";
@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 const Notification = ({ isOpen, toggleOpen, assistant }) => {
   const { t } = useTranslation();
   const sysVersion = useDataStore((state) => state.system_info?.CurrentVersion);
-  const [buttonName, setReturnButtonName] = useState("OK");
   const [isUpdateRequired, setIsUpdateRequired] = useState(1);
 
   useEffect(() => {
@@ -147,7 +146,7 @@ const Notification = ({ isOpen, toggleOpen, assistant }) => {
     // new update detected
     footerContent = <>
       <div className="notification">
-          <div class="item1">
+          <div className="item1">
             <Button
               size="m"
               variant="text"
@@ -156,12 +155,11 @@ const Notification = ({ isOpen, toggleOpen, assistant }) => {
               {t('notification.close_button')}
             </Button>
           </div>
-          <div class="item2">
+          <div className="item2">
             <a rel="noopener noreferrer" target="_blank" href={data.install_url}>
               <Button
                 size="m"
                 variant="contained"
-                sx={{ backgroundColor: "#0054ae" }}
               >
                 {t('notification.portal_button')}
               </Button>
@@ -179,7 +177,6 @@ const Notification = ({ isOpen, toggleOpen, assistant }) => {
         date={data.date}
         install_url={data.install_url}
         release_notes={data.release_notes}
-        setReturnButtonName={setReturnButtonName}
         installedVersion={sysVersion}
         isUpdateRequired={isUpdateRequired}
       />

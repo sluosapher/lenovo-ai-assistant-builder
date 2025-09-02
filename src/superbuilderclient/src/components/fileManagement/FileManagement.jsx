@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import FileTable from "./FileTable";
 import "./FileManagement.css";
 import Button from '@mui/material/Button';
@@ -32,10 +32,10 @@ const FileManagement = ({ isOpen, onClose, onOpen}) => {
     if (!isOpen) {
         return null;
     }
-    
+
    return (
     <div className="fm-modal-overlay" onClick={(e) => e.stopPropagation()}>
-        
+
         <Button variant="contained" className='close-button' onClick={onClose}>
         <ArrowCircleLeft />    {t('draganddrop.file_manage.back')}</Button>
 
@@ -46,15 +46,15 @@ const FileManagement = ({ isOpen, onClose, onOpen}) => {
         <div className='add-remove-button-container'>
             {fileStatus !== "uploading" ? (
                 <Button disabled={!isChatReady} variant="contained" onClick={()=>uploadFiles("")} className="add-buttons" >{t('draganddrop.file_manage.add')}</Button>
-            ) : 
+            ) :
             (
                 <Button variant="contained" onClick={()=>cancelFileUpload()} className="cancel-buttons" >{t('draganddrop.file_manage.cancel')}</Button>
             )
             }
-            
-            <Button id = "remove" disabled = {isDisabled || !isChatReady} variant="contained" className="remove-buttons" onClick={removeSelectedFiles}> {t('draganddrop.file_manage.remove')}</Button>      
+
+            <Button id = "remove" disabled = {isDisabled || !isChatReady} variant="contained" className="remove-buttons" onClick={removeSelectedFiles}> {t('draganddrop.file_manage.remove')}</Button>
         </div>
-        
+
     </div>
    )
 

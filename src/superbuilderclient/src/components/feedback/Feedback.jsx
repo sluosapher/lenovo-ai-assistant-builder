@@ -1,30 +1,37 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+﻿import React, { useState, useEffect, useContext, useRef } from "react";
 import "./Feedback.css";
 import { invoke } from "@tauri-apps/api/core";
-import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { ChatContext } from "../context/ChatContext";
 import { EmailWindowContext } from "../context/EmailWindowContext";
 import { FileManagementContext } from "../context/FileManagementContext";
 import { useTranslation } from 'react-i18next';
 
-const FeedbackRow = ({ question, message, messageIndex }) => {
+const FeedbackRow = ({ question, message, messageIndex, resubmitQuestion, enableSendFeedback=false, enableEmail=true, markdownRef }) => {
   const { t } = useTranslation();
-  const { sendMessage, setIsChatReady, isChatReady } = useContext(ChatContext);
+  const { setIsChatReady, isChatReady } = useContext(ChatContext);
   const { updateTable } = useContext(FileManagementContext);
   const { appendMessageToEmail } = useContext(EmailWindowContext);
   const inputRef = useRef(null);
 
-  // Array of logos (example URLs)
-  const logos = [
-    { alt: "/path/to/logo1.png", function: "feedback-thumbs-up" },
-    { alt: "/path/to/logo2.png", function: "feedback-thumbs-down" },
-    { alt: "/path/to/logo3.png", function: "feedback-divider" },
+  // Build up the feedback row available functions based on props passed in
+  let logos = [
     { alt: "/path/to/logo4.png", function: "feedback-refresh" },
     { alt: "/path/to/logo5.png", function: "feedback-copy" },
-    // { alt: "download", function: "feedback-download" },
-    // { alt: "share", function: "feedback-share" },
-    { alt: "email", function: "feedback-email" },
   ];
+  if (enableSendFeedback) {
+    logos = [
+      { alt: "/path/to/logo1.png", function: "feedback-thumbs-up" },
+      { alt: "/path/to/logo2.png", function: "feedback-thumbs-down" },
+      { alt: "/path/to/logo3.png", function: "feedback-divider" },
+      ...logos,
+    ];
+  }
+  if (enableEmail) {
+    logos = [
+      ...logos,
+      { alt: "email", function: "feedback-email" },
+    ];
+  }
   const quickposfeedback = ["Nice", "It's correct!", "Thanks!"];
   const quicknegfeedback = ["Incorrect", "Incomplete", "Misleading"];
   const [input, setInput] = useState(""); //for reading in text
@@ -41,6 +48,7 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
   const [qButtonsVisible, setQButtonsVisible] = useState(false);
   const [qButtons, setQButtons] = useState([]);
   const [emailAppend, setEmailAppend] = useState(false);
+  const [copyPressed, setCopyPressed] = useState(false); // handles copy button clicked styling
 
   useEffect(() => {
     if (showInput && inputRef.current) {
@@ -54,7 +62,8 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
   };
 
   const loadEmail = () => {
-    appendMessageToEmail(question, message); // append question and message to new or existing email window
+    const messagePlainText = markdownRef.current.innerText; // use the plain text without any styling for now
+    appendMessageToEmail(question, messagePlainText); // append question and message to new or existing email window
     setEmailAppend(true);
     setTimeout(() => {
       setEmailAppend(false);
@@ -88,14 +97,24 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
         }
         break;
       case "feedback-refresh":
-        if (!isChatReady) return;
-        console.log("Re-submitting prompt at message index: ", messageIndex-1);
-        await sendMessage(question, messageIndex-1); // return the original question index for chat history context
+        resubmitQuestion(question, messageIndex-1); // ask Chat parent to resubmit question
         break;
       case "feedback-copy":
         try {
-          const copiedText = "Question: " + question + "\n\nResponse: " + message;
-          await writeText(copiedText);
+          const htmlContent = markdownRef.current.innerHTML; // full HTML styling
+          const textContent = markdownRef.current.innerText; // plain text version
+          // copy as both plain text and HTML so rich text markdown styling can be retained
+          navigator.clipboard.write([
+            new ClipboardItem({
+              "text/plain": new Blob([textContent], { type: "text/plain" }),
+              "text/html": new Blob([htmlContent], { type: "text/html" })
+            })
+          ]);
+          // copy button visual feedback
+          setCopyPressed(true);
+          setTimeout(() => {
+            setCopyPressed(false);
+          }, 200);
           console.log("Copied to clipboard");
         } catch (e) {
           console.log("Error copying: ", e);
@@ -174,22 +193,6 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
   return (
     <div className="feedbackrow">
       <div className="topfeedbackrow">
-        {/* {qButtonsVisible && (
-          <div className="quick-buttons-column">
-            {qButtons.map((button) => (
-              <button
-                key={button}
-                className={`quick-button ${
-                  upSelected ? "up" : downSelected ? "down" : ""
-                }`}
-                onClick={() => handleQButtonClick(button)}
-              >
-                {button}
-              </button>
-            ))}
-          </div>
-        )} */}
-
         <div className="feedback-buttons-column">
           {logos.map((logo, index) => (
             <div key={index}>
@@ -197,7 +200,7 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
                 <button
                   className={`feedback-button ${logo.function} ${
                     upSelected ? "up" : downSelected ? "down" : ""
-                  }`}
+                  } ${logo.function === "feedback-copy" && copyPressed ? "copy-active" : ""}`}
                   alt={logo.alt}
                   onClick={() => handleButtonClick(logo.function)} // Add the onClick event handler
                   disabled={!isChatReady}
@@ -215,7 +218,7 @@ const FeedbackRow = ({ question, message, messageIndex }) => {
               ref={inputRef}
               type="text"
               placeholder={
-                upSelected ? t('feedback.placeholder_1') : 
+                upSelected ? t('feedback.placeholder_1') :
                 t('feedback.placeholder_2')
               }
               value={input}

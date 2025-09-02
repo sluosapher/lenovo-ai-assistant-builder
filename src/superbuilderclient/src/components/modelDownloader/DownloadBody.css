@@ -1,4 +1,4 @@
-.download-body {
+﻿.download-body {
   padding: 20px 40px;
   width: 85%;
   word-wrap: break-word;
@@ -10,17 +10,6 @@
   align-items: center;
   margin: 0 auto;
 }
-
-/* Keep or update ModelLink styling if needed */
-.MuiGrid-root a {
-  color: #1976d2;
-  text-decoration: none;
-}
-
-.MuiGrid-root a:hover {
-  text-decoration: underline;
-}
-
 
 .consent-container {
   word-break: normal;
@@ -95,17 +84,12 @@
   display: inline-flex;
 }
 
-
-.consent-checkbox {
-  width: 45px;
-  height: 45px;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-
 .consent-confirm-container {
   display: flex;
   align-items: center;
+  width: 100%;
+  justify-content: left;
+  margin-bottom: 15px;
 }
 
 .consent-confirm-text {

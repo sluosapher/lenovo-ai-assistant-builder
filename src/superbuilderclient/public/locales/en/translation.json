@@ -1,4 +1,4 @@
-{
+﻿{
   "minimum_hardware": {
     "title": "Minimum Hardware Specifications Not Met",
     "part_1": "Your hardware is not compatible with this software.",
@@ -19,7 +19,8 @@
     "button": {
       "fiels": "Add Files",
       "folders": "Add Folders",
-      "manage": "Manage Knowledge Base"
+      "manage_kb": "Manage Knowledge Base",
+      "manage_mcp": "Manage MCP Server"
     },
     "title": "Knowledge Base",
     "subtitle": "\n• Add files to the Knowledge Base to make your assistant smarter. For specialized queries, attach them directly to the query.\n",
@@ -43,6 +44,66 @@
       "resp_upload_completed_3": "File(s) could not be added. \nThey were either canceled, previously added, or in an unsupported format."
     }
   },
+  "mcp": {
+    "ui": {
+      "back": "Back to Super Agent",
+      "add": "Add MCP Server",
+      "edit": "Edit MCP server info",
+      "remove": "Remove MCP Server",
+      "mcp_server": "MCP Server",
+      "mcp_server_name": "MCP Server Name",
+      "mcp_server_url": "MCP Server URL",
+      "mcp_server_env": "MCP Server Env (Optional)",
+      "mcp_server_command": "MCP Server Command",
+      "mcp_server_command_args": "MCP Server Command Args (Optional)",
+      "mcp_server_info": "Info from MCP Server",
+      "mcp_server_info_empty": "No MCP Server info available. Please start it before view.",
+      "mcp_server_info_fetching": "Fetching MCP Server info...",
+      "url_radio": "URL",
+      "command_radio": "Command",
+      "add_button": "Add",
+      "save_button": "Save",
+      "close_button": "Close",
+      "disabled_checkbox": "Disabled",
+      "load_button": "Load MCP Servers",
+      "mcp_agent": "MCP Agent",
+      "add_agent": "Add new MCP Agent Info",
+      "edit_agent": "Edit MCP Agent Info",
+      "add_agent_button": "Add Agent",
+      "mcp_agent_name": "MCP Agent Name",
+      "mcp_agent_description": "Description",
+      "mcp_agent_system_prompt": "System Prompt",
+      "mcp_agent_mcp_server": "MCP Servers",
+      "mcp_agent_mcp_server_placeholder": "Select MCP Server(s)",
+      "mcp_agent_mcp_server_note": "Note: At least one MCP Server is required to start the agent",
+      "confirm_remove": "Confirm Remove",
+      "confirm_remove_message": "Please confirm to remove the selected",
+      "remove_button": "Remove"
+    },
+    "server_table": {
+      "command_title": "MCP Server with Command",
+      "url_title": "MCP Server with URL",
+      "name": "MCP Server Name",
+      "url": "URL",
+      "env": "Env",
+      "command": "Command",
+      "command_args": "Command Args",
+      "actions": "Actions",
+      "start": "Start",
+      "stop": "Stop",
+      "starting": "Starting",
+      "stopping": "Stopping",
+      "edit": "Edit"
+    },
+    "agent_table": {
+      "agent_name": "Agent Name",
+      "agent_description": "Description",
+      "system_prompt": "System Prompt",
+      "mcp_server": "MCP Server",
+      "actions": "Actions",
+      "remove": "Remove"
+    }
+  },
   "chat": {
     "new_session": "<New Session>",
     "edit_tips": "Edit",
@@ -50,10 +111,11 @@
     "placeholder": "Enter your question here",
     "placeholder_generate_image": "Generate an image",
     "processing": "Processing...",
-    "disclaimer": "Disclaimer: You are interacting with a Chatbot. Intel(R) AI Assistant Builder can make mistakes. Check important information.",
+    "disclaimer_part_1": "Disclaimer: You are interacting with a Chatbot. ",
+    "disclaimer_part_2": " can make mistakes. Check important information.",
     "imageinfo": "If image-related tasks are complete, please switch back to a text LLM for standard queries to get better response.",
     "attach": {
-      "title": "Attach and query files",
+      "title": "Attach temporary files for special queries",
       "summary": "Query Summary",
       "summary_tips": "Attach up to 3 documents (PDF, DOCX, TXT) for summarization and querying.",
       "data": "Query Tabular Data",
@@ -74,7 +136,8 @@
     "user": {
       "notice": "If image-related tasks are complete, please switch back to a text LLM for standard queries to get better response.",
       "welcome": "Welcome,",
-      "subwelcome": "How can I help you today?"
+      "subwelcome": "How can I help you today?",
+      "current_model": "Current Model:"
     }
   },
   "topbar": {
@@ -85,22 +148,23 @@
     "content_part_4": "Assistant Builder Application Package:",
     "content_part_4_1": "Visit the",
     "content_part_5": "Intel® AI Assistant Builder Website",
-    "content_part_6": "Large Language Model:",
-    "content_part_7": "Embeddings Model:",
+    "content_part_6": "Chat Model:",
+    "content_part_7": "Embedding Model:",
     "content_part_8": "Reranker Model:",
     "content_part_9": "Opensource component and license information",
     "content_part_10": "OK",
     "view_model_link": "View Model Card"
   },
   "sidebar": {
-    "chat_history": "Chat History",
-    "new_chat": "New Chat",
+    "chat_history": "Session History",
+    "new_chat": "New Session",
     "report_bug": "Report a Bug",
     "help": "Help Guide",
     "setting": "App Settings",
     "admin_mode": "Admin mode",
     "mode_enable": "enabled",
-    "mode_disable": "disabled"
+    "mode_disable": "disabled",
+    "mcp_manager": "MCP Manager"
   },
   "model_downloader": {
     "head": {
@@ -117,7 +181,10 @@
       "status_complete": "Models' download complete - Let's go",
       "status_failed": "Model(s) download failed.",
       "troubleshooting_prefix": "For help, visit the 'Tips, Troubleshooting, Known Issues' section",
-      "troubleshooting_link": "here."
+      "troubleshooting_link": "here.",
+      "embedding_model": "Embedding Model",
+      "ranker_model": "Reranker Model",
+      "chat_model": "Chat Model"
     }
   },
   "email": {
@@ -163,12 +230,14 @@
     "models": {
       "title": "Models",
       "description": "View and change the active AI models",
+      "recommended": "Recommended Models",
+      "other": "Other Models",
       "current": {
         "currentllm": "Current LLM",
         "currentllm_tips": "*Model download might be triggered upon change",
         "embedding": "Current Embedding Model",
         "embedding_tips": "*Model download might be triggered upon change",
-        "ranker": "Current Ranker Model",
+        "ranker": "Current Reranker Model",
         "ranker_tips": "*Model download might be triggered upon change",
         "endpoint": "Model Download Endpoint",
         "endpoint_tips1": "If you have trouble downloading, please try a different download endpoint.",
@@ -209,6 +278,15 @@
         "notice_3": "and choose the desired model from the dropdown list.",
         "close_button": "Close",
         "active_button": "Activate Model & Close Window"
+      },
+      "deletion": {
+        "title": "Model Removal Confirmation",
+        "description": "You are about to remove",
+        "description_2": "This action cannot be undone.",
+        "button": {
+          "remove": "Remove",
+          "cancel": "Cancel"
+        }
       }
     },
     "parameters": {
@@ -301,5 +379,16 @@
   },
   "fluidmodel": {
     "close_button": "Close"
+  },
+  "model_incompatible": {
+    "header_model_updates_required": "Model Updates Required",
+    "incompatible_models_message": "The following models are incompatible with this version and must be removed and redownloaded:",
+    "preparing_remove_models": "Preparing to remove models...",
+    "removing_model": "Removing {{modelName}} ({{current}}/{{total}})...",
+    "remove_models_success": "All models removed successfully. Restarting application...",
+    "remove_models_failed": "Failed to remove some models: {{failedModels}}",
+    "remove_models_failed_generic": "Failed to remove models.",
+    "remove_models_error": "Error: {{error}}",
+    "button_remove_models": "Remove Models"
   }
 }

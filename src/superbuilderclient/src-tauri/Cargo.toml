@@ -1,6 +1,6 @@
 [package]
 name = "IntelAIA"
-version = "1.2.0"
+version = "2.0.0"
 description = "Intel(R) AI Assistant Builder"
 authors = ["Intel Corp"]
 edition = "2021"

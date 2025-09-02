@@ -1,14 +1,57 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+﻿// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod grpc_client;
-use grpc_client::{SharedClient, super_builder};
-use grpc_client::{initialize_client,
-    call_chat,connect_client,get_config, mw_say_hello, llm_health_check, remove_file,
-    upload_file, send_feedback, download_file, get_file_list, pyllm_say_hello, stop_chat, stop_upload_file, set_assistant_view_model,
-    update_notification, get_chat_history, remove_session, send_email, set_models, update_db_models, set_parameters, 
-    load_models, upload_model, set_session_name,set_user_config_view_model, convert_model, export_user_config, import_user_config};
+use grpc_client::{ SharedClient, super_builder };
+use grpc_client::{
+    initialize_client,
+    call_chat,
+    connect_client,
+    get_config,
+    mw_say_hello,
+    llm_health_check,
+    remove_file,
+    upload_file,
+    send_feedback,
+    download_file,
+    get_file_list,
+    pyllm_say_hello,
+    stop_chat,
+    stop_upload_file,
+    set_assistant_view_model,
+    update_notification,
+    get_chat_history,
+    remove_session,
+    send_email,
+    set_models,
+    update_db_models,
+    set_parameters,
+    load_models,
+    upload_model,
+    set_session_name,
+    set_user_config_view_model,
+    convert_model,
+    export_user_config,
+    import_user_config,
+    remove_model,
+    get_mcp_agents,
+    get_active_mcp_agents,
+    add_mcp_agent,
+    edit_mcp_agent,
+    remove_mcp_agent,
+    start_mcp_agent,
+    stop_mcp_agent,
+    get_mcp_servers,
+    add_mcp_server,
+    edit_mcp_server,
+    remove_mcp_server,
+    start_mcp_server,
+    stop_mcp_server,
+    get_active_mcp_servers,
+    get_mcp_server_tools,
+    validate_model,
+};
 //use reqwest::Client;
-use tauri::{AppHandle, Manager};
+use tauri::{ AppHandle, Manager };
 //use tokio::fs::File;
 //use tokio::io::AsyncWriteExt;
 mod config;
@@ -18,7 +61,7 @@ use std::fs;
 use std::path::Path;
 use serde::Serialize;
 use std::process::Command;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use base64::{ engine::general_purpose::STANDARD, Engine as _ };
 use image::imageops::FilterType;
 use image::ImageReader as ImageReader;
 use std::io::Cursor;
@@ -33,14 +76,14 @@ struct MissingModelsResponse {
 #[tauri::command]
 fn get_system_language() -> String {
     use sys_locale::get_locale;
-    
+
     get_locale().unwrap_or_else(|| String::from("en"))
 }
 
 #[tauri::command]
 async fn get_missing_models(
     models_abs_path: String,
-    models: Vec<String>,
+    models: Vec<String>
 ) -> Result<MissingModelsResponse, String> {
     // Get the current executable path
 
@@ -53,7 +96,6 @@ async fn get_missing_models(
     } else {
         println!("Models directory already exists.");
     }
-
 
     // List the files in the models directory
     let mut files_in_directory = Vec::new();
@@ -83,6 +125,11 @@ async fn get_missing_models(
 }
 
 #[tauri::command]
+fn path_exists(path: String) -> bool {
+    std::path::Path::new(&path).exists()
+}
+
+#[tauri::command]
 fn check_openvino_model(folder_path: String) -> bool {
     let folder_path = Path::new(&folder_path);
     let file1_path = folder_path.join("openvino_model.bin");
@@ -93,31 +140,36 @@ fn check_openvino_model(folder_path: String) -> bool {
 
 fn set_window_borders(window: tauri::WebviewWindow) -> Result<(), String> {
     match window.hwnd() {
-    #[cfg(target_os = "windows")]
-    Ok(hwnd) => {
-        use windows::Win32::{
-            Graphics::Dwm::DwmExtendFrameIntoClientArea,
-            UI::Controls::MARGINS,
-            Foundation::HWND,
-        };
+        #[cfg(target_os = "windows")]
+        Ok(hwnd) => {
+            use windows::Win32::{
+                Graphics::Dwm::DwmExtendFrameIntoClientArea,
+                UI::Controls::MARGINS,
+                Foundation::HWND,
+            };
 
-        let margins = MARGINS {
-            cxLeftWidth: 1,
-            cxRightWidth: 1,
-            cyTopHeight: 1,
-            cyBottomHeight: 1,
-        };
-        
-        unsafe {
-            DwmExtendFrameIntoClientArea(HWND(hwnd.0 as isize), &margins).map_err(|err | format!("Error: {:?}", err))
+            let margins = MARGINS {
+                cxLeftWidth: 1,
+                cxRightWidth: 1,
+                cyTopHeight: 1,
+                cyBottomHeight: 1,
+            };
+
+            unsafe {
+                DwmExtendFrameIntoClientArea(HWND(hwnd.0 as isize), &margins).map_err(|err|
+                    format!("Error: {:?}", err)
+                )
+            }
         }
-    }
-    _ => Err("Unsupported platform".to_string()),
+        _ => Err("Unsupported platform".to_string()),
     }
 }
 
 #[tauri::command]
-async fn set_window_borders_command(app: tauri::AppHandle, window_label: String) -> Result<(), String> {
+async fn set_window_borders_command(
+    app: tauri::AppHandle,
+    window_label: String
+) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(&window_label) {
         set_window_borders(window)
     } else {
@@ -129,10 +181,7 @@ async fn send_exit(app: &AppHandle) {
     let state = app.state::<SharedClient>();
     let mut client_guard = state.lock().await;
     let client = client_guard.as_mut().unwrap();
-    client
-        .client_disconnected(super_builder::ClientDisconnectedRequest {})
-        .await
-        .unwrap();
+    client.disconnect_client(super_builder::DisconnectClientRequest {}).await.unwrap();
 }
 
 #[tauri::command]
@@ -151,10 +200,7 @@ fn open_in_explorer(path: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn open_file_and_return_as_base64(
-    filename: String
-) -> Result<String, String> {
-    
+fn open_file_and_return_as_base64(filename: String) -> Result<String, String> {
     let path = Path::new(&filename);
     let display = path.display();
     let file = match fs::read(path) {
@@ -169,20 +215,24 @@ fn open_file_and_return_as_base64(
         .decode()
         .map_err(|e| format!("Failed to decode image: {}", e))?;
 
-    let max_width = 40;
-    let max_height = 40;
+    let max_width = 48;
+    let max_height = 48;
     // Check the image dimensions
     let (width, height) = img.dimensions();
     let resized_img = if width > max_width || height > max_height {
-        println!("Resizing image to fit within {w}x{h} while preserving aspect ratio", w=max_width, h=max_height);
-    
+        println!(
+            "Resizing image to fit within {w}x{h} while preserving aspect ratio",
+            w = max_width,
+            h = max_height
+        );
+
         // Calculate scaling factor
-        let scale = (max_width as f32) / width.max(height) as f32;
-    
+        let scale = (max_width as f32) / (width.max(height) as f32);
+
         // Calculate new dimensions
-        let new_width = (width as f32 * scale).round() as u32;
-        let new_height = (height as f32 * scale).round() as u32;
-    
+        let new_width = ((width as f32) * scale).round() as u32;
+        let new_height = ((height as f32) * scale).round() as u32;
+
         // Resize the image while keeping aspect ratio
         img.resize(new_width, new_height, FilterType::Lanczos3)
     } else {
@@ -206,7 +256,8 @@ fn open_file_and_return_as_base64(
 pub async fn run() {
     let client = initialize_client().await;
 
-    let app = tauri::Builder::default()
+    let app = tauri::Builder
+        ::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -218,23 +269,72 @@ pub async fn run() {
             Ok(())
         })
         .manage(client)
-        .invoke_handler(tauri::generate_handler![
-            get_system_language, call_chat, check_openvino_model,
-            connect_client, get_config, remove_file,
-            mw_say_hello, download_file, llm_health_check, upload_file,
-            send_feedback, get_missing_models, get_file_list, pyllm_say_hello, 
-            stop_chat, stop_upload_file, update_notification, set_window_borders_command, open_in_explorer, set_assistant_view_model,            
-            get_chat_history, remove_session, send_email, set_models, update_db_models, set_parameters, 
-            load_models,convert_model,upload_model,set_session_name, open_file_and_return_as_base64,set_user_config_view_model,get_schema, import_user_config, export_user_config
-        ])
+        .invoke_handler(
+            tauri::generate_handler![
+                get_system_language,
+                call_chat,
+                check_openvino_model,
+                connect_client,
+                get_config,
+                remove_file,
+                mw_say_hello,
+                download_file,
+                llm_health_check,
+                upload_file,
+                send_feedback,
+                get_missing_models,
+                path_exists,
+                get_file_list,
+                pyllm_say_hello,
+                stop_chat,
+                stop_upload_file,
+                update_notification,
+                set_window_borders_command,
+                open_in_explorer,
+                set_assistant_view_model,
+                get_chat_history,
+                remove_session,
+                send_email,
+                set_models,
+                update_db_models,
+                set_parameters,
+                load_models,
+                convert_model,
+                upload_model,
+                set_session_name,
+                open_file_and_return_as_base64,
+                set_user_config_view_model,
+                get_schema,
+                import_user_config,
+                export_user_config,
+                remove_model,
+                get_mcp_agents,
+                get_active_mcp_agents,
+                add_mcp_agent,
+                edit_mcp_agent,
+                remove_mcp_agent,
+                start_mcp_agent,
+                stop_mcp_agent,
+                get_mcp_servers,
+                add_mcp_server,
+                edit_mcp_server,
+                remove_mcp_server,
+                start_mcp_server,
+                stop_mcp_server,
+                get_active_mcp_servers,
+                get_mcp_server_tools,
+                validate_model,
+            ]
+        )
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
-    app.run(|app, event| match event {
-        tauri::RunEvent::ExitRequested { .. } => {
-            futures::executor::block_on(send_exit(app));
+    app.run(|app, event| {
+        match event {
+            tauri::RunEvent::ExitRequested { .. } => {
+                futures::executor::block_on(send_exit(app));
+            }
+            _ => {}
         }
-        _ => {}
     });
 }
-

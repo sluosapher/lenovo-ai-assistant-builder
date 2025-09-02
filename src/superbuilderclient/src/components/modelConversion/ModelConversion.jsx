@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen, emit } from "@tauri-apps/api/event";
 import {
@@ -24,6 +24,7 @@ import FluidModal from "../FluidModal/FluidModal";
 import AssistantLogo from "../assistantLogo/assistantLogo";
 import DOMPurify from "dompurify"; // Ensure DOMPurify is imported
 import "./ModelConversion.css";
+import InfoIcon from '@mui/icons-material/InfoOutlined';
 
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
@@ -75,7 +76,7 @@ const ModelLink = ({ modelName }) => {
         href={safeURL}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ color: "#0054ae" }}
+        style={{ color: "var(--primary-main-color)" }}
       >
         View Model Card
       </a>
@@ -97,6 +98,7 @@ const ModelConversion = () => {
   const error = useModelStore((state) => state.error);
   const hfModelInput = useModelStore((state) => state.hfModelInput);
   const downloadProgress = useModelStore((state) => state.downloadProgress);
+  const modelJson = useModelStore((state) => state.modelJson);
   const {
     setHFModelInput,
     checkMissingModels,
@@ -115,6 +117,7 @@ const ModelConversion = () => {
     validateParametersInput,
   } = useModelStore();
   const config = useDataStore((state) => state.config);
+
   const { getDBConfig } = useDataStore();
   const [isMaximized, setIsMaximized] = useState(false);
 
@@ -138,7 +141,7 @@ const ModelConversion = () => {
   useEffect(() => {
     resetMissingModels();
     getDBConfig();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const unlisten = listen("download-progress", (event) => {
@@ -165,8 +168,10 @@ const ModelConversion = () => {
   }, []);
 
   const handleActivateModel = async () => {
-    const setActiveModelSuccess = await setModel();
+    const setActiveModelSuccess = await setModel(modelJson);
     await emit("new-model-added", setActiveModelSuccess);
+    const appWindow = getCurrentWindow();
+    await appWindow.minimize();
     handleClose();
   };
 
@@ -269,7 +274,7 @@ const ModelConversion = () => {
           display: "flex",
           justifyContent: "flex-start",
           alignItems: "center",
-          height: "40px",
+          height: "var(--topbar-height)",
           backgroundColor: config.ActiveAssistant.header_bg_color,
           "--header-text-color": config.ActiveAssistant.header_text_bg_color,
           color: config.ActiveAssistant.header_text_bg_color,
@@ -284,7 +289,7 @@ const ModelConversion = () => {
               paddingLeft: "4px",
           }}
         >
-          <AssistantLogo assistant={config.ActiveAssistant} />
+          <AssistantLogo assistant={config.ActiveAssistant} transparentDefaultBackground={true}/>
         </div>
         <Typography
           sx={{
@@ -390,12 +395,13 @@ const ModelConversion = () => {
                 rel="noopener noreferrer"
                 style={{ display: "inline-block" }} // Ensures the link wraps the image correctly
               >
-                <img
+                {/* <img
                   className="infoshape"
                   src="/images/normal_u151.svg"
                   alt="Info Icon"
                   style={{ cursor: "pointer" }} // Optional: change cursor to pointer
-                />
+                /> */}
+                <InfoIcon color="primary" fontSize="small"/>
               </a>
             </Tooltip>
           </div>
@@ -507,7 +513,7 @@ const ModelConversion = () => {
           color="primary"
           disabled={status !== "" || (consentNeeded && !consentGiven)}
           onClick={handleEnabler}
-          sx={{ display: "flex", width: "100%", textTransform: "none" }}
+          sx={{ display: "flex", width: "75%", textTransform: "none" }}
         >
           {t("setting.models.conversion.convert_button")}
         </Button>

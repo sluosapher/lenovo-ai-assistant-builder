@@ -1,9 +1,10 @@
-import "./ChatHistory.css";
+﻿import "./ChatHistory.css";
 import { TextField, IconButton } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useContext, useState, useRef, useEffect } from "react";
 import { ChatContext } from "../context/ChatContext";
+import useMcpStore from "../../stores/McpStore";
 import { useTranslation } from 'react-i18next';
 
 const formatDate = (date) => {
@@ -19,6 +20,7 @@ const formatDate = (date) => {
 
 const SessionItem = ({ session, onClose }) => {
   const { sessions, removeSessions, selectSession, setSessionName } = useContext(ChatContext);
+  const mcpManagementOpen = useMcpStore((state) => state.mcpManagementOpen);
   const [hover, setHover] = useState(false);
   const [edit, setEdit] = useState(false);
   const [inputName, setInputName] = useState(session.name);
@@ -46,6 +48,9 @@ const SessionItem = ({ session, onClose }) => {
         if (!edit) {
           selectSession(session.id);
           onClose();
+          if (mcpManagementOpen) {
+            useMcpStore.getState().closeMcpManagement();
+          }
         }
       }}
     >

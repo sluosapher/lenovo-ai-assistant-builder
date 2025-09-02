@@ -1,4 +1,4 @@
-.setting-panel {
+﻿.setting-panel {
   position: fixed;
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
   left: 57px;
   box-shadow: 3px 0px 3px rgba(215, 215, 215, 0.34901960784313724);
   position: fixed;
-  z-index: -10 !important;
+  /* z-index: 10 !important; */
 }
 
 .setting-content {
@@ -54,9 +54,7 @@
   align-items: center;
   width: 50%;
   min-height: 50px;
-  
 }
-
 
 .logo-action-buttons {
   display: flex;
@@ -126,6 +124,7 @@
   margin-bottom: 16px;
   padding: 16px;
   background-color: white;
+  flex-direction: column;
 }
 
 /* Keep these existing MUI overrides */
@@ -247,7 +246,7 @@
   flex-direction: column;
 }
 
-.select-folder-button {
+.user-model-button {
   display: flex;
   text-transform: none !important;
   width: 100%;
@@ -258,7 +257,6 @@
   margin-right: 10px !important;
   border: 1px solid #d7d7d7;
   border-radius: 0px;
-  background-color: #0054ae !important;
   box-sizing: border-box;
   font-size: 16px;
   color: #ffffff !important;
@@ -315,13 +313,13 @@
 
 .label-with-tooltip {
   display: flex;
-   align-items: center;  
-  justify-content: flex-start; 
-  gap: 8px;  
-  width: 100%; 
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
 }
 .label-with-tooltip .MuiButton-root {
-  min-width: unset;  /* Add this to remove default min-width */
+  min-width: unset; /* Add this to remove default min-width */
 }
 
 .radio-group-with-label {
@@ -334,11 +332,10 @@
   padding-right: 6px;
 }
 
-
 .model-upload-info {
   line-height: 1.6;
-  max-width:1080px;
-  max-height:800px;
+  max-width: 1080px;
+  max-height: 800px;
 }
 
 .model-upload-info ol {
@@ -370,10 +367,9 @@
   font-size: 14px;
 }
 
-
 .model-switch-card .MuiButton-root {
-  display: flex;  
-  margin-bottom: 4px; 
+  display: flex;
+  margin-bottom: 4px;
   justify-content: center;
   align-items: center;
   gap: 8px;

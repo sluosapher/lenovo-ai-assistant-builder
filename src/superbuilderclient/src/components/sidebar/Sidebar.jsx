@@ -1,34 +1,37 @@
-import "./Sidebar.css";
+﻿import "./Sidebar.css";
 import React, { useState, useEffect, useContext, useRef } from "react";
-import Setting from "../setting/Setting";
-import { ChatHistory } from "./ChatHistory";
-import { ChatContext } from "../context/ChatContext";
 import { invoke } from "@tauri-apps/api/core";
-import { EmailWindowContext } from "../context/EmailWindowContext";
-import { open } from '@tauri-apps/plugin-shell';
-import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import { ChatContext } from "../context/ChatContext";
+import { WorkflowContext } from "../context/WorkflowContext";
 import useDataStore from "../../stores/DataStore";
-import { Button as MuiButton } from "@mui/material";
-import {grey } from '@mui/material/colors';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import HelpIcon from '@mui/icons-material/Help';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { useTranslation } from 'react-i18next';
+// import useMcpStore from "../../stores/McpStore";
+import SettingsIcon from "@mui/icons-material/Settings";
+import NewWorkflowIcon from "@mui/icons-material/AddCircle";
+import HistoryIcon from "@mui/icons-material/History";
+import AdminIcon from "@mui/icons-material/ManageAccounts";
+// import mcpLogo from '../../assets/images/mcp-logo.svg';
+import { useTranslation } from "react-i18next";
+// import McpManagement from "../mcpManagement/McpManagement";
+import { ChatHistory } from "./ChatHistory";
+import WorkflowOptions from "../workflows/WorkflowOptions";
+import SidebarOverlay from "./SidebarOverlay";
+import Setting from "../setting/Setting";
 
-const Sidebar = ({ }) => {
+const Sidebar = ({}) => {
   const { t } = useTranslation();
-  const { config, assistant,getDBConfig } = useDataStore();
-  const { newSession, isChatReady } = useContext(ChatContext);
-  const [isSettingOpen, setIsSettingOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const { config, getDBConfig } = useDataStore();
+  const { newSession, isChatReady, newChatModelNeeded } = useContext(ChatContext);
+  const {
+    workflowSidebarVisible: isWorkflowOpen,
+    setWorkflowSidebarVisible: setIsWorkflowOpen,
+  } = useContext(WorkflowContext);
+  const [isSettingOpen, setIsSettingOpen] = useState(false); // setting popout panel
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false); // chat history popout panel
   const sidebarRef = useRef(null);
-  const { openBugReport } = useContext(EmailWindowContext);
   const [settingVisibility, setSettingVisibility] = useState(false);
-  const handleSetting = () => {
-    setIsSettingOpen(!isSettingOpen);
-    setIsHistoryOpen(false);
-  };
-  const handleSetAdmin = async() => {
+  // const mcpManagementOpen = useMcpStore((state) => state.mcpManagementOpen);
+
+  const handleSetAdmin = async () => {
     const shallowNewData = Object.keys(config).reduce((acc, key) => {
       if (typeof config[key] !== "object" || config[key] === null) {
         acc[key] = config[key];
@@ -39,46 +42,118 @@ const Sidebar = ({ }) => {
     const viewModel = JSON.stringify(shallowNewData);
     await invoke("set_user_config_view_model", { vm: viewModel });
     getDBConfig();
-  }
+  };
 
   const handleHistory = () => {
     setIsSettingOpen(false);
+    setIsWorkflowOpen(false);
     setIsHistoryOpen(!isHistoryOpen);
+  };
+
+  const handleSetting = () => {
+    setIsHistoryOpen(false);
+    setIsWorkflowOpen(false);
+    setIsSettingOpen(!isSettingOpen);
+  };
+
+  const handleWorkflow = () => {
+    setIsHistoryOpen(false);
+    setIsSettingOpen(false);
+    setIsWorkflowOpen(!isWorkflowOpen);
   };
 
   const closePanels = () => {
     setIsSettingOpen(false);
     setIsHistoryOpen(false);
-  };
-
-  const adminIcon = () => {
-    return (
-      <button
-        className={`admin-icon ${config.is_admin ? "admin-enabled" : "admin-disabled"}`}
-        title={t('sidebar.admin_mode') + ' - '  + (config.is_admin ? t('sidebar.mode_enable') : t('sidebar.mode_disable'))}
-        onClick={handleSetAdmin}
-      />
-    );
+    setIsWorkflowOpen(false);
   };
 
   useEffect(() => {
-
-    document.documentElement.style.setProperty(
-      "--sidebar-refresh-bg-color",
-      assistant.sidebar_box_refresh_bg_color
-    );
-    document.documentElement.style.setProperty(
-      "--sidebar-refresh-hover-bg-color",
-      assistant.sidebar_box_refresh_hover_bg_color
-    );
-    document.documentElement.style.setProperty(
-      "--sidebarbox-bg-color",
-      assistant.sidebar_box_bg_color
-    );
     setSettingVisibility(config.is_admin);
   }, [config]);
 
-  const isOpen = isSettingOpen || isHistoryOpen;
+  useEffect(() => {
+    if (isChatReady == false && newChatModelNeeded == true && isSettingOpen == false) {
+      handleSetting();
+    }
+  }, [isChatReady, newChatModelNeeded, isSettingOpen]);
+
+  const isOpen = isSettingOpen || isHistoryOpen || isWorkflowOpen;
+
+  const SidebarBox = ({
+    isChatReady,
+    toggleSetting,
+    toggleHistory,
+    toggleWorkflow,
+    settingVisibility,
+  }) => {
+    const { t } = useTranslation();
+    // const mcpManagementOpen = useMcpStore((state) => state.mcpManagementOpen);
+    // const toggleMcpLibrary = () => {
+    //   if (mcpManagementOpen) {
+    //     useMcpStore.getState().closeMcpManagement();
+    //   } else {
+    //     useMcpStore.getState().openMcpManagement();
+    //   }
+    // };
+
+    const SidebarButton = ({title, icon, onClick, additionalClasses=""}) => {
+      return (
+        <button
+          title={title}
+          className={`sidebar-button ` + additionalClasses}
+          onClick={onClick}
+          disabled={!isChatReady}
+        >
+          {icon}
+        </button>
+      );
+    }
+
+    return (
+      <div className="sidebarbox">
+        <SidebarButton
+          additionalClasses="new-chat-button"
+          title={t('sidebar.new_chat')}
+          onClick={() => {
+            if (isChatReady) {
+              toggleWorkflow();
+            }
+          }}
+          icon={<NewWorkflowIcon className="sidebar-icon" color="primary" sx={{fontSize: "50px"}}/>}
+        />
+        <SidebarButton
+          title={t('sidebar.chat_history')}
+          onClick={() => {
+            if (isChatReady) {
+              toggleHistory();
+            }
+          }}
+          icon={<HistoryIcon className="sidebar-icon" fontSize="large"/>}
+        />
+        {/* <SidebarButton
+          title={t("sidebar.mcp_manager")}
+          onClick={toggleMcpLibrary}
+          icon={<img className="sidebar-image-icon" src={mcpLogo} alt="MCP Logo" />}
+        /> */}
+        <div className="spacer"></div>
+        <div className="admin">
+          <SidebarButton
+            title={t('sidebar.admin_mode') + ' - '  + (config.is_admin ? t('sidebar.mode_enable') : t('sidebar.mode_disable'))}
+            onClick={handleSetAdmin}
+            icon={<AdminIcon className="sidebar-icon" fontSize="large"/>}
+          />
+        </div>
+        {settingVisibility && (
+          <SidebarButton
+            title={t('sidebar.setting')}
+            onClick={toggleSetting}
+            icon={<SettingsIcon className="sidebar-icon" fontSize="large"/>}
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -91,9 +166,9 @@ const Sidebar = ({ }) => {
           toggleSetting={() => handleSetting()}
           isHistoryOpen={isHistoryOpen}
           toggleHistory={() => handleHistory()}
-          openBugReport={openBugReport}
+          isWorkflowOpen={isWorkflowOpen}
+          toggleWorkflow={() => handleWorkflow()}
           settingVisibility={settingVisibility}
-          adminIcon={adminIcon()}
         />
         <Setting
           isOpen={isSettingOpen}
@@ -104,70 +179,34 @@ const Sidebar = ({ }) => {
           isOpen={isHistoryOpen}
           onClose={() => setIsHistoryOpen(false)}
         />
+        {/* {mcpManagementOpen && (
+          <McpManagement
+            isSidebarOpen={isSettingOpen || isHistoryOpen}
+            closePanels={closePanels}
+          />
+        )} */}
+        <SidebarOverlay
+          isOpen={isWorkflowOpen}
+          onClose={() => {
+            if (isChatReady) {
+              setIsWorkflowOpen(false);
+            }
+          }}
+          content={
+            <WorkflowOptions
+              onWorkflowSelected={() => {
+                setIsWorkflowOpen(false)
+                // if (mcpManagementOpen) {
+                //   useMcpStore.getState().closeMcpManagement();
+                // }
+              }}
+            />
+          }
+        />
       </div>
     </>
   );
 };
 
-const SidebarBox = ({
-  isChatReady,
-  newSession,
-  isSettingOpen,
-  toggleSetting,
-  isHistoryOpen,
-  toggleHistory,
-  openBugReport,
-  settingVisibility,
-  adminIcon
-}) => {
-  const { t } = useTranslation();
-  return (
-  <div className="sidebarbox">
-    <div
-      className={`chat-history ${!isChatReady ? "disabled" : ""}`}
-      title={t('sidebar.chat_history')}
-      onClick={() => {
-        if (isChatReady) {
-          toggleHistory();
-        }
-      }}
-    >
-      <img alt="Chat History" src="/images/normal_u17.svg" />
-    </div>
-    <button
-      title={t('sidebar.new_chat')}
-      className={`new-chat  ${!isChatReady ? "disabled" : ""}`}
-      onClick={newSession}
-      disabled={!isChatReady}
-    />
-    <div className="spacer"></div>
-    <div className="bug" title={t('sidebar.report_bug')}>
-      <button className="bug-button" onClick={openBugReport}></button>
-    </div>
-    <div className="help" title={t('sidebar.help')}>
-      <button
-        className="help-button"
-        onClick={async () => {
-          await open('https://aibuilder.intel.com/Intel%20AI%20Assistant%20Builder%20User%20Guide.pdf');
-        }}
-      >
-        <HelpIcon className="help-icon" />
-      </button>
-    </div>
-    <div className="admin">
-      {adminIcon}
-    </div>
-    {settingVisibility && (
-      <div className="Settings" title={t('sidebar.setting')}>
-        <button className="setting-button" onClick={toggleSetting}>
-          <SettingsIcon 
-            className={`setting-icon ${isSettingOpen ? "open" : ""}`}
-          />
-        </button>
-      </div>
-    )}
-  </div>
-);
-}
-
 export default Sidebar;
+

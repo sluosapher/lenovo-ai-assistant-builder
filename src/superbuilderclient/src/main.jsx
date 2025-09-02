@@ -12,6 +12,7 @@ import { AppStatusProvider } from './components/context/AppStatusContext';
 import { EmailWindowProvider } from './components/context/EmailWindowContext';
 import { ModelDownloaderProvider } from './components/context/ModelDownloaderContext';
 import { FileManagementProvider } from "./components/context/FileManagementContext";
+import { WorkflowContextProvider } from "./components/context/WorkflowContext";
 
 const startApp = async () => {
   await initializeI18n();
@@ -21,15 +22,17 @@ const startApp = async () => {
     // <React.StrictMode>
     <AppStatusProvider>
       <RagReadyProvider>
-        <ChatProvider>
-          <EmailWindowProvider>
-            <ModelDownloaderProvider>
-              <FileManagementProvider>
-                <App />
-              </FileManagementProvider>
-            </ModelDownloaderProvider>
-          </EmailWindowProvider>
-        </ChatProvider>
+        <WorkflowContextProvider>
+          <ChatProvider>
+            <EmailWindowProvider>
+              <ModelDownloaderProvider>
+                <FileManagementProvider>
+                  <App />
+                </FileManagementProvider>
+              </ModelDownloaderProvider>
+            </EmailWindowProvider>
+          </ChatProvider>
+        </WorkflowContextProvider>
       </RagReadyProvider>
     </AppStatusProvider>
     // </React.StrictMode>

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+﻿import React, { useContext } from "react";
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -23,7 +23,7 @@ const useDataStore = create((set) => ({
   // config
   config: {
     version: "0.0.0",
-    default_doc_path: "rag_docs/",
+    default_doc_path: "test_files/",
     local_model_hub: "local_models/",
     is_admin: true,
     ActiveAssistant: {
@@ -70,6 +70,29 @@ const useDataStore = create((set) => ({
   assistantName: "AB",
   assistantLogo: "default",
 
+  // Commit ID validation state
+  commitIdValidation: {
+    hasUpdates: false,
+    message: "",
+    orphanedModels: [], // Only models that need deletion
+  },
+
+  // Set commit ID validation
+  setCommitIdValidation: (validation) => {
+    set({ commitIdValidation: validation });
+  },
+
+  // Clear validation when deletion is complete
+  clearCommitIdValidation: () => {
+    set({
+      commitIdValidation: {
+        hasUpdates: false,
+        message: "",
+        orphanedModels: [],
+      },
+    });
+  },
+
   getDBConfig: async () => {
     try {
       const response = await invoke("get_config", { assistant: "" });
@@ -77,6 +100,25 @@ const useDataStore = create((set) => ({
       const dbConfig = JSON.parse(response);
       console.log("Database Config Fetched.");
       console.debug("DB Config:", dbConfig);
+
+      // Check for orphaned models that need deletion
+      if (dbConfig.CommitIdValidation?.orphaned_model_names?.length > 0) {
+        console.log(
+          `Found ${dbConfig.CommitIdValidation.orphaned_model_names.length} orphaned models that need deletion:`,
+          dbConfig.CommitIdValidation.orphaned_model_names
+        );
+
+        useDataStore.getState().setCommitIdValidation({
+          hasUpdates: dbConfig.CommitIdValidation.has_updates || false,
+          message:
+            dbConfig.CommitIdValidation.message || "Orphaned models detected",
+          orphanedModels: dbConfig.CommitIdValidation.orphaned_model_names,
+        });
+      } else {
+        console.log("No orphaned models need deletion");
+        useDataStore.getState().clearCommitIdValidation();
+      }
+
       useDataStore.getState().parseConfig(dbConfig);
       set({
         config: dbConfig,
@@ -104,13 +146,14 @@ const useDataStore = create((set) => ({
         {}
       );
     }
-    if (
-      dbConfig.ActiveAssistant &&
-      dbConfig.ActiveAssistant.recommended_models
-    ) {
-      dbConfig.ActiveAssistant.recommended_models = JSON.parse(
-        dbConfig.ActiveAssistant.recommended_models
-      );
+    if (dbConfig.ActiveAssistant) {
+      if (dbConfig.ActiveAssistant.recommended_models) {
+        dbConfig.ActiveAssistant.recommended_models = JSON.parse(
+          dbConfig.ActiveAssistant.recommended_models
+        );
+      } else {
+        dbConfig.ActiveAssistant.recommended_models = [];
+      }
     }
   },
 
@@ -128,6 +171,11 @@ const useDataStore = create((set) => ({
 
   setAssistantLogo: (logo) => {
     set({ assistantLogo: logo });
+  },
+
+  setViewModel: async (viewModel) => {
+    const viewModelString = JSON.stringify(viewModel);
+    await invoke("set_user_config_view_model", { vm: viewModelString });
   },
 
   exportConfig: async (assistantName, exportPath) => {
@@ -177,10 +225,14 @@ const useDataStore = create((set) => ({
         "Resume",
         "Clear",
       ];
-      const newAssistant = { ...useDataStore.getState().assistant,
-        features: allFeatures };
-      const newConfig = { ...useDataStore.getState().config,
-        ActiveAssistant: newAssistant };
+      const newAssistant = {
+        ...useDataStore.getState().assistant,
+        features: allFeatures,
+      };
+      const newConfig = {
+        ...useDataStore.getState().config,
+        ActiveAssistant: newAssistant,
+      };
       useDataStore.getState().setAssistant(newAssistant);
       useDataStore.getState().setConfig(newConfig);
       console.log("Enabled all features");

@@ -1,9 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import useDataStore from "./DataStore";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import DOMPurify from "dompurify";
 
 const useModelStore = create((set) => ({
@@ -26,6 +25,24 @@ const useModelStore = create((set) => ({
     set({ modelParametersInput: params });
   },
 
+  hfDownloadOptions: [
+    {
+      key: "huggingface",
+      label: "https://huggingface.co",
+      url: "https://huggingface.co",
+    },
+    {
+      key: "hf-mirror",
+      label: "https://hf-mirror.com",
+      url: "https://hf-mirror.com",
+    },
+    {
+      key: "www.modelscope.cn",
+      label: "https://www.modelscope.cn",
+      url: "https://www.modelscope.cn",
+    },
+  ],
+
   hfModelInput: "",
   setHFModelInput: (model) => {
     set({ hfModelInput: model });
@@ -38,14 +55,20 @@ const useModelStore = create((set) => ({
       resizable: true,
       height: 580,
       width: 660,
+      title: "Model Convert",
     });
 
     modelConversionWindow.once("tauri://created", () => {
       console.log("modelConversionWindow created successfully");
     });
 
-    modelConversionWindow.once("tauri://error", (e) => {
-      console.error("Error creating webview window:", e);
+    modelConversionWindow.once("tauri://error", async (e) => {
+      if (modelConversionWindow.isMinimized()) {
+        await modelConversionWindow.unminimize();
+        console.log("Window is restored");
+      } else {
+        console.error("Error creating webview window:", e);
+      }
     });
   },
    validateParametersInput: (userInput) => {
@@ -57,7 +80,7 @@ const useModelStore = create((set) => ({
       set({ error: "Input is too long." });
       return false;
     }
-  
+
     //check for presence of potentially dangerous characters
     const dangerousCharacters = /[<>;'"`]/;
     if (dangerousCharacters.test(userInput)) {
@@ -115,7 +138,11 @@ const useModelStore = create((set) => ({
       return true;
     } catch (error) {
       console.error("Failed to download model:", error);
-      set({ downloading: false, status: "Error in downloading model.", error: error});
+      set({
+        downloading: false,
+        status: "Error in downloading model.",
+        error: error,
+      });
       throw error;
     }
   },
@@ -132,7 +159,7 @@ const useModelStore = create((set) => ({
       // set({ modelReady: response });
       return response;
     } catch (error) {
-      set({ status: "Failed to check the model!", error: error});
+      set({ status: "Failed to check the model!", error: error });
       console.error("Failed to check OpenVINO model:", error);
     }
   },
@@ -168,25 +195,21 @@ const useModelStore = create((set) => ({
       set({
         status: "Error in Uploading Model",
         modelIsConverted: false,
-        error: error
+        error: error,
       });
       return false;
     }
     return true;
   },
 
-  setModel: async () => {
+  setModel: async (modelJson) => {
     try {
-      const modelJson = useModelStore.getState().modelJson;
-      console.log("setModel input: ", modelJson);
+      console.debug("setModel input: ", modelJson);
       await invoke("update_db_models", {
         assistant: useDataStore.getState().config.ActiveAssistant.short_name,
-        modelsJson: useModelStore.getState().modelJson,
+        modelsJson: modelJson,
       });
-
       console.log("Model updated in DB successfully");
-      const appWindow = getCurrentWindow();
-      await appWindow.minimize();
     } catch (error) {
       console.error("Failed to update model in DB:", error);
       return false;
@@ -230,8 +253,30 @@ const useModelStore = create((set) => ({
       return true;
     } catch (error) {
       console.error("Failed to convert Model:", error);
-      set({ status: "Error in Converting Model" , error: error});
+      set({ status: "Error in Converting Model", error: error });
       throw error;
+    }
+  },
+
+  removeModelName: "",
+  setRemoveModelname: (modelName) => {
+    set({ removeModelName: modelName });
+  },
+  removeModelDialog: false,
+  openRemoveModelDialog: () => {
+    set({ removeModelDialog: true });
+  },
+  closeRemoveModelDialog: () => {
+    set({ removeModelDialog: false });
+  },
+  removeModel: async () => {
+    try {
+      const response = await invoke("remove_model", {
+        modelName: useModelStore.getState().removeModelName,
+      });
+      console.debug("Model removed:", response);
+    } catch (error) {
+      console.error("Failed to remove Model:", error);
     }
   },
 }));

@@ -1,5 +1,5 @@
 # Frontend client 
-The frontend client is built with Tauri, which uses React + Rust.
+The frontend client is built with Tauri + React + Typescript
 
 ## Recommended IDE Setup
 - [VS Code](https://code.visualstudio.com/)

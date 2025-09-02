@@ -1,0 +1,62 @@
+.mcp-modal-overlay {
+  position: fixed;
+  top: var(--topbar-height);
+  left: var(--sidebar-width);
+  right: 0;
+  bottom: 17px;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 15px 40px 15px;
+  z-index: 999;
+  overflow: auto;
+  height: 98%;
+}
+
+.mcpmodal {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  width: 100%;
+}
+
+.mcpmodal-container {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.mcpmodal-metadata {
+  background-color: #f4f4f4;
+  padding: 8px;
+  border-radius: 3px;
+  font-size: 14px;
+  height: 320px;
+  overflow: auto;
+}
+
+.mcpmodal-metadata-tool {
+  margin-bottom: 10px;
+}
+
+.mcpmodal-content {
+  padding: 10px 0 0;
+}
+
+.mcpmodal-footer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.mcpmodal-footer button {
+  width: 100%;
+}
+
+.mcpmodal-footer .button {
+  /* flex:1 1 auto; */
+  flex-grow: 1;
+  width: 50%;
+}

@@ -1,6 +1,6 @@
+﻿
 
 
-  
 .logo {
     flex-shrink: 0;
     flex-grow: 0;
@@ -23,12 +23,16 @@
 .info-footer {
     display:flex;
     justify-content: center;
+    align-items: center;
     width: 100%;
+    font-size: 18px;
+    height: 40px;
+    cursor: pointer;
 }
 
 .footer-button {
   width: 100%;
-  background-color: transparent !important;
+  height: 100%;
 }
 
 .info-modal {

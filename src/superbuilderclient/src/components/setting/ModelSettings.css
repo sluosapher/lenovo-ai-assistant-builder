@@ -1,4 +1,4 @@
-.accordion-section {
+﻿.accordion-section {
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
@@ -31,13 +31,6 @@
     resize: vertical;
     border: 1px solid rgb(214, 214, 214);
     color: rgb(75, 75, 75);
-}
-
-.information-tooltip {
-    width: 305px;
-    background-color: white;
-    color: rgb(75, 75, 75);
-    border: 1px solid grey;
 }
 
 .information-container {
@@ -79,4 +72,9 @@
 
 .accordion-content .accordion-title {
     font-size: 16px;
+}
+
+.accordion-content .accordion-small-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
 }

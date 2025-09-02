@@ -1,4 +1,4 @@
-.MuiDialog-root {
+﻿.MuiDialog-root {
   z-index: 1300;
 }
 
@@ -16,8 +16,8 @@ body, html {
 }
 
 :root {
-  --topbar-height: 40px;
-  --sidebar-width: 57px;
+  --topbar-height: 48px;
+  --sidebar-width: 65px;
   --footer-height: 32px;
   --aria-hidden: false;
 }
@@ -70,7 +70,7 @@ body, html {
   background-color: #939393;
   color: white;
   text-align: left;
-  padding: 3px 6px 6px 6px;  
+  padding: 3px 6px 6px 6px;
   height: 20px;
   font-size: small;
   z-index: 1000;
