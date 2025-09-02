@@ -18,12 +18,21 @@ Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-ass
 - Math servers
 
 **How to Build and Run:**
+
+**Method 1: Building to Executable (Recommended)**
 1. Each MCP server example contains a build script (`build.bat` or `build.sh`)
 2. Run the build script in Command Prompt or PowerShell
 3. After successful build, the executable will be available in the `dist` folder
 4. **Prerequisites:** Python must be installed on your system to run the build scripts
 
+**Method 2: Running with PowerShell Script**
+1. Each MCP server example contains a `run.ps1` script for direct execution
+2. Run the PowerShell script directly without building an executable
+3. **Prerequisites:** Python must be installed on your system
+
 **How to Add MCP Server to Intel AI Assistant Builder:**
+
+**For Executable Method:**
 1. In the Intel AI Assistant Builder UI, select **Command** as the connection type
 2. Set the **MCP Server Command** field to the full path of your generated executable
 3. Configure environment variables if needed (e.g., Flight and Hotel servers require `SERP_API_KEY` from [serpapi.com](https://serpapi.com))
@@ -31,6 +40,15 @@ Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-ass
 See the math server example below for reference:
 
 <img src="./images/math-mcp-server.png" alt="math mcp server" width="50%">
+
+**For PowerShell Script Method:**
+1. In the Intel AI Assistant Builder UI, select **URL** as the connection type
+2. Run the `run.ps1` script to start the server
+3. Configure the URL based on the protocol:
+   - **SSE Protocol:** Use `url:port/sse` (e.g., `http://localhost:8000/sse`)
+   - **HTTP Protocol:** Use `url:port/mcp` for streamable HTTP (e.g., `http://localhost:8000/mcp`)
+4. Configure environment variables if needed
+
 
 ### 2. Open Source MCP Servers
 We also support community-maintained MCP servers from the official Model Context Protocol repository at [github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers). These servers provide access to popular tools and services.
