@@ -12,10 +12,10 @@ Custom MCP servers that can be automatically generated using our codegen framewo
 
 **Examples:**
 Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-assistant-builder/tree/main/mcp/mcp_servers)
-- Mindmap generation server
-- Flight search server
-- Hotel search server
-- Math servers
+- Mindmap generation server (uses stdio protocol)
+- Flight search server (uses HTTP streamable protocol)
+- Hotel search server (uses HTTP streamable protocol)
+- Math servers (uses stdio protocol)
 
 **How to Build and Run:**
 
@@ -45,8 +45,9 @@ See the math server example below for reference:
 1. In the Intel AI Assistant Builder UI, select **URL** as the connection type
 2. Run the `run.ps1` script to start the server
 3. Configure the URL based on the protocol:
-   - **SSE Protocol:** Use `url:port/sse` (e.g., `http://localhost:8000/sse`)
    - **HTTP Protocol:** Use `url:port/mcp` for streamable HTTP (e.g., `http://localhost:8000/mcp`)
+   - **SSE Protocol:** Use `url:port/sse` (e.g., `http://localhost:8000/sse`)
+
 4. Configure environment variables if needed
 
 
