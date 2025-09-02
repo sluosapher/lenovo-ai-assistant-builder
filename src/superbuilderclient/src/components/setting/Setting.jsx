@@ -154,13 +154,13 @@ const Setting = ({ isOpen, setIsOpen, onClose }) => {
     {
       key: "divider",
       label: "divider",
-      content: "⎯⎯ Recommended Models⎯⎯⎯⎯⎯⎯",
+      content: "âŽ¯âŽ¯ Recommended ModelsâŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯",
     },
     ...recommendedModel,
     {
       key: "divider",
       label: "divider",
-      content: "⎯⎯ Other Models⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯",
+      content: "âŽ¯âŽ¯ Other ModelsâŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯âŽ¯",
     },
     ...allModels,
   ];

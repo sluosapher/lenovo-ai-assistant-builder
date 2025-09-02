@@ -22,7 +22,7 @@ const getSystemLanguage = async () => {
   try {
     const rawLang = await invoke("get_system_language");
 
-    // Normalize language codes (e.g. zh-Hans-SG → zh-Hans)
+    // Normalize language codes (e.g. zh-Hans-SG â†’ zh-Hans)
     const normalizedLang =
       rawLang
         .replace(/-[a-zA-Z]+$/, "") // Remove regional suffix
