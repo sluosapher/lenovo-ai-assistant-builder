@@ -99,7 +99,7 @@ class Test{ServerName}Server(unittest.TestCase):
         try:
             return json.loads(output.strip())
         except json.JSONDecodeError as e:
-            self.fail(f"Could not parse JSON from output: {output}\nError: {e}")
+            self.fail(f"Could not parse JSON from output: {{output}}\nError: {{e}}")
 
 if __name__ == '__main__':
     unittest.main()

@@ -24,9 +24,11 @@ def safe_format_template(template_content: str, template_vars: dict) -> str:
     
     # Only replace variables that are simple identifiers and exist in our vars
     for var_name, var_value in template_vars.items():
-        # Use word boundaries to ensure exact matches
+        # Use raw string and escape special regex characters in var_name
         pattern = r'\{' + re.escape(var_name) + r'\}'
-        result = re.sub(pattern, str(var_value), result)
+        # Escape backslashes in the replacement value to prevent regex issues
+        safe_value = str(var_value).replace('\\', '\\\\')
+        result = re.sub(pattern, safe_value, result)
     
     # Convert double braces to single braces for runtime f-string formatting
     # This converts {{variable}} to {variable} for runtime use
@@ -39,7 +41,7 @@ def generate_server_package(
     server_name: str, 
     description: str, 
     default_port: int = 7905,
-    protocol: str = "sse"
+    protocol: str = "stdio"
 ):
     """Generate a complete MCP server package."""
     if not server_name.isidentifier():
@@ -57,7 +59,18 @@ def generate_server_package(
         "ServerName": server_name.capitalize(),
         "description": description,
         "default_port": default_port,
-        "protocol": protocol
+        "protocol": protocol,
+        # Protocol-specific variables for README
+        "port_required": "No" if protocol == "stdio" else "Yes",
+        "port_display": "N/A (stdio protocol)" if protocol == "stdio" else str(default_port),
+        "protocol_description": {
+            "stdio": "Standard input/output communication, no port required",
+            "sse": "Server-Sent Events over HTTP, requires a port",
+            "http": "HTTP transport, requires a port"
+        }.get(protocol, "Unknown protocol"),
+        # Example commands based on protocol
+        "start_example": "python server.py start" if protocol == "stdio" else f"python server.py start --port {default_port}",
+        "start_example_exe": f".\\dist\\{server_name}-mcp-server.exe start" if protocol == "stdio" else f".\\dist\\{server_name}-mcp-server.exe start --port {default_port}"
     }
     
     # Template file mappings - only include files that exist
@@ -172,9 +185,9 @@ def main():
                        default=7905, 
                        help="Default server port")
     parser.add_argument("--protocol", 
-                       default="sse", 
+                       default="stdio", 
                        choices=["sse", "stdio", "http"],
-                       help="Communication protocol (default: sse)")
+                       help="Communication protocol (default: stdio)")
     
     args = parser.parse_args()
     try:

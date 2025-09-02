@@ -11,7 +11,7 @@ class TestMind_mapServer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.server_process = None
-        cls.port = int(os.getenv('MCP_MIND_MAP_PORT', 7907))
+        cls.port = int(os.getenv('MCP_MIND_MAP_PORT', 7905))
         cls.server_path = "server.py"
 
     def setUp(self):

@@ -1,6 +1,6 @@
 # math MCP Server
 
-Do math
+Do Math
 
 ## Overview
 This is a MCP (Model Context Protocol) server generated using the MCP Server Generator. 
@@ -9,9 +9,11 @@ cross-process control, and production-ready deployment capabilities.
 
 ## Configuration
 - **Server Name**: math
-- **Default Port**: 7905
+- **Protocol**: stdio
+- **Default Port**: N/A (stdio protocol)
 - **Environment Variables**:
-  - `MCP_MATH_PORT`: Override default port (optional)
+  - `MCP_MATH_PROTOCOL`: Override protocol (stdio, sse, http)
+  - `MCP_MATH_PORT`: Override default port (only for sse/http protocols - current: 7905)
 
 ## Quick Start
 
@@ -23,7 +25,7 @@ cross-process control, and production-ready deployment capabilities.
 
 ### 2. Development Usage
 ```powershell
-# Start server for development
+# Start server for development (using stdio protocol)
 python server.py start
 
 # Check status
@@ -43,7 +45,7 @@ python server.py stop
 
 ### 4. Production Usage
 ```powershell
-# Run the built executable
+# Run the built executable (using stdio protocol)
 .\dist\math-mcp-server.exe start
 
 # Check status
@@ -62,11 +64,22 @@ The server supports the following commands in both Python and executable formats
 | Command | Description | Example |
 |---------|-------------|---------|
 | `start` | Start the server | `python server.py start` |
+| `start --protocol sse --port 8080` | Start with specific protocol/port | `python server.py start --protocol sse --port 8080` |
 | `stop` | Stop the server (cross-process) | `python server.py stop` |
 | `status` | Check server status | `python server.py status --json` |
 | `ping` | Health check | `python server.py ping` |
 | `version` | Show version info | `python server.py version --json` |
 | `help` | Show help message | `python server.py help` |
+
+### Protocol Support
+
+This server is configured to use the **stdio** protocol.
+
+**Current Configuration:**
+- **Active Protocol**: stdio
+- **Description**: Standard input/output communication, no port required
+- **Port Required**: No
+- **Default Port**: N/A (stdio protocol)
 
 ### Adding New Tools
 
@@ -130,7 +143,7 @@ The built executable can be distributed without Python dependencies:
 
 ```powershell
 # Copy executable to target system
-copy .\dist\math-mcp-server.exe C:\MyServers\
+Copy-Item .\dist\math-mcp-server.exe C:\MyServers\
 
 # Run on target system
 C:\MyServers\math-mcp-server.exe start
@@ -140,11 +153,12 @@ C:\MyServers\math-mcp-server.exe start
 
 The server includes robust process management:
 
-- **PID File Tracking**: `server.pid` tracks running processes
-- **Cross-Process Control**: Stop servers from different terminals
-- **Port Conflict Detection**: Prevents multiple instances
+- **PID File Tracking**: `server.pid` tracks running processes (when applicable)
+- **Cross-Process Control**: Stop servers from different terminals (for sse/http protocols)
+- **Port Conflict Detection**: Prevents multiple instances (sse/http protocols only)
 - **Graceful Shutdown**: Proper cleanup of resources
-- **Platform Support**: Windows (`taskkill`) and Unix (`kill`)
+- **Platform Support**: Windows (`taskkill`) and Unix (`kill`) for port-based protocols
+- **Protocol-Aware**: stdio protocol uses simpler process management without ports
 
 ## Management Scripts
 
@@ -159,13 +173,15 @@ The server includes robust process management:
 
 ### Manual Management
 ```powershell
-# Direct Python execution
-python server.py start --port 8080
+# Direct Python execution (current protocol: stdio)
+python server.py start                              # Start with configured protocol
+python server.py start --protocol sse --port 8080    # Override to use SSE protocol with custom port
 python server.py status --json
 python server.py stop
 
-# Direct executable execution
-.\dist\math-mcp-server.exe start --port 8080
+# Direct executable execution (current protocol: stdio)
+.\dist\math-mcp-server.exe start                              # Start with configured protocol
+.\dist\math-mcp-server.exe start --protocol sse --port 8080    # Override to use SSE protocol with custom port
 .\dist\math-mcp-server.exe status --json
 .\dist\math-mcp-server.exe stop
 ```
@@ -177,16 +193,16 @@ python server.py stop
 **Server won't stop:**
 ```powershell
 # Check for PID file
-ls server.pid
+Get-ChildItem server.pid
 
 # Manual process termination
 taskkill /F /PID <pid_from_file>
 
 # Remove stale PID file
-rm server.pid
+Remove-Item server.pid
 ```
 
-**Port already in use:**
+**Port already in use (sse/http protocols only):**
 ```powershell
 # Check what's using the port
 netstat -ano | findstr 7905
@@ -198,7 +214,7 @@ taskkill /F /PID <pid>
 **Build errors:**
 ```powershell
 # Clean build artifacts
-rm -r build, dist
+Remove-Item -Recurse -Force build, dist -ErrorAction SilentlyContinue
 
 # Rebuild
 .\build.ps1
@@ -237,7 +253,7 @@ math/
 
 ## Generated Information
 
-- **Date**: 2025-07-29 14:58:05
+- **Date**: 2025-09-02 10:57:13
 - **Generator**: MCP Server Generator v1.0.0
-- **Framework**: FastMCP with SSE transport
-- **Architecture**: Cross-process PID management
+- **Framework**: FastMCP with stdio transport
+- **Architecture**: Protocol-aware process management

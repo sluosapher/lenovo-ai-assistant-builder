@@ -27,6 +27,7 @@ a = Analysis(
         'typing',
         'requests',
         'datetime',
+        'psutil',
         # Add project-specific imports as needed
         # 'python_dotenv',     # For environment variables
     ],

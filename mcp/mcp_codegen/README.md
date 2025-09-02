@@ -8,7 +8,7 @@ This generator creates a complete MCP server package with all necessary files an
 
 ## Key Features
 
-- **FastMCP Server**: Complete server implementation with SSE/stdio/HTTP protocols
+- **FastMCP Server**: Complete server implementation with stdio/HTTP/SSE protocols
 - **Centralized Tool Registration**: Simple list-based tool management system
 - **Production Ready**: Cross-process control, port conflict detection, graceful shutdown
 - **Build Scripts**: PowerShell management and PyInstaller executable generation
@@ -19,26 +19,29 @@ This generator creates a complete MCP server package with all necessary files an
 
 ### Basic Command
 ```bash
-python McpServerGen.py myserver --description "My Custom MCP Server" --port 7906 --protocol sse
+python McpServerGen.py myserver --description "My Custom MCP Server"
 ```
 
 ### Arguments
 - `server_name`: Name of the server (required)
 - `--output-dir, -o`: Parent directory for server package (default: current directory)
 - `--description, -d`: Server description (default: "MCP Server Template")
-- `--port, -p`: Default server port (default: 7905)
-- `--protocol`: Communication protocol (sse, stdio, http - default: sse)
+- `--port, -p`: Default server port (default: 7905, ignored for stdio protocol)
+- `--protocol`: Communication protocol (stdio, http, sse - default: stdio)
 
 ### Examples
 ```bash
-# Basic server
-python McpServerGen.py calculator -d "Calculator MCP Server" -p 7910
+# Basic server with default stdio protocol (recommended)
+python McpServerGen.py calculator -d "Calculator MCP Server"
 
-# Server with stdio protocol
+# Explicitly specify stdio protocol
 python McpServerGen.py filemanager --protocol stdio
 
-# Server with HTTP protocol and custom port
-python McpServerGen.py webserver --protocol http --port 8080
+# HTTP server with custom port (for web-based integrations)
+python McpServerGen.py webserver -d "Web API MCP Server" --port 7906 --protocol http
+
+# SSE protocol (legacy, use stdio or http instead)
+python McpServerGen.py calculator -d "Calculator MCP Server" -port 7908 --protocol sse
 ```
 
 ## Generated Package Structure
@@ -163,7 +166,7 @@ This creates a standalone executable in the `dist/` directory.
 
 ### Common Issues
 
-**Port already in use**:
+**Port already in use** (for http/sse protocols):
 - Check for existing server: `python server.py status`
 - Kill conflicting process: `netstat -ano | findstr <port>`
 
