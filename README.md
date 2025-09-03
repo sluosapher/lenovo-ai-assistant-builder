@@ -15,7 +15,7 @@ These assistants streamline everyday tasks and deliver intelligent solutions by 
 - [Developer Resources](#developer-resources)
   - [User Interface Source Code](#user-interface-source-code)
   - [Code Examples and Tutorials](#code-examples-and-tutorials)
-  - [Complete API Documentation](#complete-api-documentation)
+  - [API Documentation](#api-documentation)
 - [LLM Models and Recommendations](#llm-models-and-recommendations)
 - [Platform Capabilities](#platform-capabilities)
 - [Coming Soon](#coming-soon)
@@ -92,11 +92,13 @@ To get started with the UI source code, refer to the [UI development guide](src/
 
   [Sample Code](example/README.md)
 
-### [Complete API Documentation](https://intel.github.io/intel-ai-assistant-builder/)
-  This folder contains API service documentation. SuperBuilder's API service main entry point is the [AssistantService](https://intel.github.io/intel-ai-assistant-builder/html/127056c5-b74d-e4f7-a324-5e4aa7c09935.htm) class. You can also access the API document from this link: [API Documentation](https://intel.github.io/intel-ai-assistant-builder/)
-  
-   ![Assistant Service](media/api_service_border.png)
- 
+### API Documentation
+  Find the API documentation in the following links:
+
+  [API Documentation - v2.0.0](https://intel.github.io/intel-ai-assistant-builder/v2.0.0)
+
+  [API Documentation - v1.2.0](https://intel.github.io/intel-ai-assistant-builder/v1.2.0)
+
 <br>
 
 ## LLM Models and Recommendations
