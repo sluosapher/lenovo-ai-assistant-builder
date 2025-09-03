@@ -1,4 +1,4 @@
-import superbuilder_middleware_pb2 as sb
+import superbuilder_service_pb2 as sb
 import helpers.chat as chat
 import helpers.parameters as param
 

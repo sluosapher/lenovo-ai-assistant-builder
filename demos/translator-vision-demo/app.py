@@ -13,8 +13,8 @@ import time
 import helpers.chat as chat
 import helpers.config as config
 import helpers.model as model
-import superbuilder_middleware_pb2 as sb
-import superbuilder_middleware_pb2_grpc as sbg
+import superbuilder_service_pb2 as sb
+import superbuilder_service_pb2_grpc as sbg
 import json
 
 

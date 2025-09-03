@@ -4,7 +4,7 @@ import json
 import random
 from tzlocal import get_localzone
 
-import superbuilder_middleware_pb2 as sb
+import superbuilder_service_pb2 as sb
 
 def get_outlook_meetings():
     meetings =[]
