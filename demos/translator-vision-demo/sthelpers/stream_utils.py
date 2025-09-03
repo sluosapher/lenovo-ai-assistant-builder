@@ -10,9 +10,11 @@ import helpers.mw as mw
 
 GRPC_ADDRESS = 'localhost:5006'
 
+DEFAULT_MODEL_PATH = "C:\\ProgramData\\IntelAIA\\local_models"
 DEFAULT_VLM = "Phi-3.5-vision-instruct-int4-ov"
-# DEFAULT_LLM ="Qwen2-7B-Instruct-int4-ov"
-DEFAULT_LLM = 'Qwen2.5-7B-Instruct-int4-ov'
+DEFAULT_LLM = 'Qwen3-8B-int4-ov'
+DEFAULT_EMBEDDER = 'bge-base-en-v1.5-int8-ov'
+DEFAULT_RANKER = 'bge-reranker-base-int8-ov'
 
 LOADING_GIF=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loading_animation.gif'))
 
@@ -30,65 +32,38 @@ def aab_connect():
     success, stub = mw.connect(channel)
     return success, stub, channel
 
-def parse_streaming_json_response(response_iter):
-    buffer = ""
+def parse_streaming_response(response_iter):
     reply = ""
     for resp in response_iter:
         if not resp:
             continue
-        buffer += resp
-        while True:
-            start = buffer.find("{")
-            end = buffer.find("}", start)
-            if start != -1 and end != -1:
-                json_str = buffer[start:end+1]
-                try:
-                    data = json.loads(json_str)
-                    msg = data.get("message", "")
-                    if msg:
-                        reply += msg
-                except Exception:
-                    pass
-                buffer = buffer[end+1:]
-            else:
-                break
+
+        reply += resp  # Append streamed text
+        time.sleep(0.01)  # for smooth streaming effect
+
     return reply
 
 import time
 
 def stream_and_parse_translation(response_iter, text_placeholder, translated_batches):
     """
-    Streams and parses character-by-character JSON responses,
+    Streams and parses plain string responses,
     updating the Streamlit text area in real time.
     """
-    buffer = ""
     reply = ""
     for resp in response_iter:
-        # resp = resp.strip()
         if not resp:
             continue
-        buffer += resp
-        while True:
-            start = buffer.find("{")
-            end = buffer.find("}", start)
-            if start != -1 and end != -1:
-                json_str = buffer[start:end+1]
-                try:
-                    data = json.loads(json_str)
-                    msg = data.get("message", "")
-                    if msg:
-                        reply += msg
-                        # Show streaming result in real time
-                        text_placeholder.text_area(
-                            "Translated Content",
-                            '\n'.join([t for t in translated_batches if t] + [reply]),
-                            height=450,
-                            key="right_text_stream"
-                        )
-                        time.sleep(0.01)  # <-- This is key for streaming!
-                except Exception:
-                    pass
-                buffer = buffer[end+1:]
-            else:
-                break
+
+        reply += resp  # Append streamed text
+
+        # Update placeholder instead of creating new text_area each time
+        text_placeholder.text_area(
+            "Translated Content",
+            '\n'.join([t for t in translated_batches if t] + [reply]),
+            height=450
+        )
+        time.sleep(0.01)  # for smooth streaming effect
+
     return reply
+

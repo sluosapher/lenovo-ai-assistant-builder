@@ -178,7 +178,10 @@ if uploaded_file:
             )
             if not stub:
                 success, stub, channel = sthelpers.aab_connect()
-            resp = model.set_model(stub, sthelpers.DEFAULT_VLM)
+            try:
+                print(model.set_model(stub, sthelpers.DEFAULT_MODEL_PATH, sthelpers.DEFAULT_VLM, sthelpers.DEFAULT_EMBEDDER, sthelpers.DEFAULT_RANKER))
+            except Exception as e:
+                st.error(f"Error loading model: {e}. Default model will be used.")
             st.session_state.vlm_loading = False
             st.session_state.vlm_loaded = True
             st.rerun()
@@ -197,12 +200,9 @@ if uploaded_file:
                             unsafe_allow_html=True
                         )  
 
-                        response_iter = chat.set_chat_request(
-                            stub, prompt=prompt, session_id=None, attachments=attachedFiles, query='image'
-                        )
-                        result = sthelpers.parse_streaming_json_response(
-                            chat.get_chat_response(response_iter, verbose=False)
-                        )
+                        image_prompt_option = chat.get_prompt_options({'name': 'QueryImagesPrompt'})
+                        response_iter = chat.set_chat_request(stub, prompt=prompt, session_id=None, attachments=attachedFiles, prompt_options=image_prompt_option)
+                        result = sthelpers.parse_streaming_response(chat.get_chat_response(response_iter, verbose=False))
                         st.session_state.vision_result = result
                         st.session_state.run_vision = False
                         text_placeholder.markdown(result or "*No response*", unsafe_allow_html=False)

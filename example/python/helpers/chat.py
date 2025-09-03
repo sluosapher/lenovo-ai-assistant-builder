@@ -12,8 +12,12 @@ def warmup(stub):
         stub: The gRPC stub for making requests to the server.
     """
     if stub is not None:
-        print("Warming Up LLM Models...")
-        stub.LoadModels(sb.LoadModelsRequest())
+        try:
+            print("Warming Up LLM Models...")
+            return stub.LoadModels(sb.LoadModelsRequest())
+        except Exception as e:
+            return e
+    return None
 
 def get_chat_history(stub):
     """

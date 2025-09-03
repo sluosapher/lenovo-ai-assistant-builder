@@ -21,8 +21,13 @@ def download(stub, url, local_path):
     except grpc.RpcError as e:
         print(f"Model download failed: {e.details()}")
 
-def switch(stub, local_model_path, model_name):
-    if not os.path.exists(local_model_path):
-        return f"Local folder for model '{model_name}' does not exist."
-    response = stub.SetModels(sb.SetModelsRequest(assistant=model_name))
-    return response.message
+def set_model(stub, local_model_path, llm, embedder, ranker):
+    llm = os.path.join(local_model_path, llm)
+    embedder = os.path.join(local_model_path, embedder)
+    ranker = os.path.join(local_model_path, ranker)
+
+    try:
+        print("Loading Models...")
+        return stub.SetModels(sb.SetModelsRequest(llm=llm, embedder=embedder, ranker=ranker))
+    except Exception as e:
+        return e

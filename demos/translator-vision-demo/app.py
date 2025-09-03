@@ -241,13 +241,11 @@ def main():
             # Actually load the model
             if not stub:
                 success, stub, channel = sthelpers.aab_connect()
-            resp = model.set_model(stub, sthelpers.DEFAULT_LLM)
-            print(resp)
-            # You may want to check resp for errors here!
-            if 'error' in resp.modelsLoaded:
-                st.error(f"Error loading model: {resp.modelsLoaded.error}. Default model will be used.")
-                # session_state.model_loading = False
-                # st.stop()
+
+            try:
+                print(model.set_model(stub, sthelpers.DEFAULT_MODEL_PATH, sthelpers.DEFAULT_LLM, sthelpers.DEFAULT_EMBEDDER, sthelpers.DEFAULT_RANKER))
+            except Exception as e:
+                st.error(f"Error loading model: {e}. Default model will be used.")
 
             session_state.model_loading = False
             session_state.model_loaded = True

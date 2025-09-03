@@ -51,7 +51,7 @@ resp = config.get_config(stub)
 print("Config:", resp)
 
 # Set the model (example for LLM)
-resp = model.set_model(stub, sthelpers.DEFAULT_LLM)
+resp = model.set_model(stub, sthelpers.DEFAULT_MODEL_PATH, sthelpers.DEFAULT_LLM, sthelpers.DEFAULT_EMBEDDER, sthelpers.DEFAULT_RANKER)
 print(resp)
 
 # Run a chat (translation example)
@@ -68,7 +68,7 @@ translated = sthelpers.stream_and_parse_translation(
 
 - `sthelpers.aab_connect()` connects to the gRPC backend and returns the stub for API calls.
 - `config.get_config(stub)` fetches the current backend configuration.
-- `model.set_model(stub, sthelpers.DEFAULT_LLM)` sets the active model.
+- `model.set_model(stub, sthelpers.DEFAULT_MODEL_PATH, sthelpers.DEFAULT_LLM, sthelpers.DEFAULT_EMBEDDER, sthelpers.DEFAULT_RANKER)` sets the active model.
 - `chat.set_chat_request(stub, prompt)` sends a chat or translation request.
 - `sthelpers.stream_and_parse_translation(...)` streams and displays the translation result.
 
