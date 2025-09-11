@@ -15,6 +15,26 @@ cross-process control, and production-ready deployment capabilities.
   - `MCP_MIND_MAP_PROTOCOL`: Override protocol (stdio, sse, http)
   - `MCP_MIND_MAP_PORT`: Override default port (only for sse/http protocols - current: 7905)
 
+## Prerequisites
+
+Before using the mind_map MCP server, you need to install the required dependencies:
+
+### 1. Install Node.js
+Download and install the Windows installer (.msi) from: https://nodejs.org/en/download/current
+
+### 2. Install markmap-cli
+Open Command Prompt (cmd) and run:
+```cmd
+npm install -g markmap-cli
+```
+
+### 3. Configure PowerShell Execution Policy (Required for Windows)
+Open PowerShell as Administrator and run:
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope LocalMachine
+```
+This is required because the mindmap creation needs to access local file paths.
+
 ## Quick Start
 
 ### 1. Setup Environment

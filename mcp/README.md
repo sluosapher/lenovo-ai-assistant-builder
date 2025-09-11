@@ -150,6 +150,12 @@ Explore our comprehensive video demonstrations to see MCP servers in action. All
 **Video:** `media\SuperBuilder_Demo_Business_Travel_MCP_Server.mp4`  
 **GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_Business_Travel_MCP_Server.mp4)
 
+### 🧠 Mind Map Generator
+**Features:** Transform markdown documents into interactive visual mind maps  
+**Prerequisites:** Follow the setup instructions in the [Mind Map MCP Server README](https://github.com/intel/intel-ai-assistant-builder/blob/main/mcp/mcp_servers/mcp_mind_map/README.md)  
+**Video:** `media\SuperBuilder_Demo_Mindmap_MCP_Server.mp4`  
+**GitHub Link:** [View Video](https://github.com/intel/intel-ai-assistant-builder/blob/main/media/SuperBuilder_Demo_Mindmap_MCP_Server.mp4)
+
 ### 🕒 Time Zone Agent  
 **Features:** Get current time across different time zones worldwide  
 **Video:** `media\SuperBuilder_Demo_Time_MCP_Server.mp4`  
