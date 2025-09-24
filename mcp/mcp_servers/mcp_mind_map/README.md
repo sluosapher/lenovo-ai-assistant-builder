@@ -28,7 +28,25 @@ Open Command Prompt (cmd) and run:
 npm install -g markmap-cli
 ```
 
-### 3. Configure PowerShell Execution Policy (Required for Windows)
+### 3. Add npm Package Path to System PATH
+After installing markmap-cli globally, you need to add the npm package path to your system PATH:
+
+1. **Find the npm global directory:**
+   ```cmd
+   npm list -g markmap-cli
+   ```
+   This will show the npm global package path (e.g., `C:\Users\YourName\AppData\Roaming\npm`)
+
+2. **Add to System PATH:**
+   - Open System Properties (Win + X → System → Advanced system settings)
+   - Click "Environment Variables"
+   - Under "System Variables", find and select "Path", then click "Edit"
+   - Click "New" and add the npm directory path from step 1 (e.g., `C:\Users\YourName\AppData\Roaming\npm`)
+   - Click "OK" to save all changes
+
+3. **Restart your system or log out/in** to ensure the PATH changes take effect
+
+### 4. Configure PowerShell Execution Policy (Required for Windows)
 Open PowerShell as Administrator and run:
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Scope LocalMachine
