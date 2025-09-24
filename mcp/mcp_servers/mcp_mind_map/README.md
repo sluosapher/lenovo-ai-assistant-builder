@@ -31,11 +31,11 @@ npm install -g markmap-cli
 ### 3. Add npm Package Path to System PATH
 After installing markmap-cli globally, you need to add the npm package path to your system PATH:
 
-1. **Find the npm global directory:**
+1. **Find the npm package directory:**
    ```cmd
    npm list -g markmap-cli
    ```
-   This will show the npm global package path (e.g., `C:\Users\YourName\AppData\Roaming\npm`)
+   This will show the markmap-cli package path (e.g., `C:\Users\YourName\AppData\Roaming\npm`)
 
 2. **Add to System PATH:**
    - Open System Properties (Win + X → System → Advanced system settings)
