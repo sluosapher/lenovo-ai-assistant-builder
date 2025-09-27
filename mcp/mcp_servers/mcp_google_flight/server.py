@@ -437,9 +437,6 @@ async def validate_date_format(date_string: str) -> dict:
 # List of all tool functions to register
 TOOL_FUNCTIONS = [
     search_flights_tool,
-    get_airport_info,
-    get_travel_classes,
-    validate_date_format,
     # Add additional tool functions here
 ]
 
