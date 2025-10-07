@@ -58,6 +58,13 @@ def download_installer(stub):
     local_path = "C:\\temp\\Intel_AI_Assistant_Builder_Installer.exe"
     return utils.download(stub, url, local_path)
 
+
+def download_model(stub):
+    url = "https://huggingface.co/OpenVINO/Qwen2.5-7B-Instruct-int4-ov"
+    local_path = "C:\\temp\\models\\Qwen2.5-7B-Instruct-int4-ov" 
+    
+    return utils.download(stub, url, local_path)
+
 def set_models(stub, model_path):    
     import os
 
@@ -136,6 +143,12 @@ def main():
         print("Downloading latest installer from Intel web portal...")
         print("Skipping the actual download in this demo")
         # download_installer(stub)
+
+        print("\n=== Download / 下载 Model ===")
+        print("Downloading latest installer from Intel web portal...")
+        print("Skipping the actual download in this demo")
+        # download_model(stub)
+
 
         print("\n=== Load Model ===")
         model_path = utils.DEFAULT_MODEL_PATH        

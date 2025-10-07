@@ -1,5 +1,6 @@
 import sys
 import os
+from typing import Optional
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'example', 'python')))
 import json
 import grpc
@@ -91,10 +92,13 @@ def set_config(stub, assistant, config_data):
     response = stub.SetActiveAssistant(sb.SetActiveAssistantRequest(assistant=assistant, models_json=config_data))
     return response.message
 
-def download(stub, url, local_path):
+def download(stub, url, local_path, token_id: Optional[str] = None):
+    """    
+    Downloads a file from the specified URL to the local path using SuperBuilder's gRPC service.
+    """
     progress_bar = tqdm(desc="Downloading", unit="%")
     try:
-        for response in stub.DownloadFiles(sb.DownloadFilesRequest(FileUrl=url, localPath=local_path)):
+        for response in stub.DownloadFiles(sb.DownloadFilesRequest(FileUrl=url, localPath=local_path, tokenId=token_id)):
             print(response.FileDownloaded)
             if int(response.progress) < 0:
                 continue
