@@ -46,7 +46,7 @@ def check_pybackend(stub):
         return False
 
 
-def aab_connect():    
+def aab_connect():
 
     success = False
     stub = None
