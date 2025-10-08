@@ -1,6 +1,6 @@
 # SuperBuilder Python gRPC Client API
 
-A Python client library for interacting with Intel AI Assistant Builder (SuperBuilder) via gRPC. This client provides easy-to-use functions to check status, manage models, download installers, and configure the SuperBuilder service.
+A sample Python client library for interacting with Intel AI Assistant Builder (SuperBuilder) via gRPC. This client provides easy-to-use functions to check status, manage models, download installers, and configure the SuperBuilder service.
 
 ## Overview
 
@@ -197,16 +197,16 @@ This will execute all demo functions and display:
 | Feature | Chinese | Status | Function |
 |---------|---------|--------|----------|
 | Download | 下载SuperBuilder | ✅ | `download_installer()` |
-| StaticInstall | 静态安装 | 🚧 TBD | `silent_install()` |
-| StaticUninstall | - | 🚧 TBD | `silent_uninstall()` |
-| StaticUpdate | 静态更新 | 🚧 TBD | `silent_update()` |
+| SilentInstall | 静态安装 | 🚧 TBD | `silent_install()` |
+| SilentUninstall | - | 🚧 TBD | `silent_uninstall()` |
+| SilentUpdate | 静态更新 | 🚧 TBD | `silent_update()` |
 | SuperBuilderStatus | 当前的SuperBuilder状态 | ✅ | `superbuilder_status()` |
-| VersionEnable | 版本启动 | ✅ | `get_software_update()` |
-| ChatEnable | 开启协议 | ✅ | `llm_status()` |
+| VersionEnable | 版本更新信息 | ✅ | `get_software_update()` |
+| ChatEnable | 开启对话 | ✅ | `llm_status()` |
 | RagEnable | 开启RAG功能 | ✅ | `llm_status()` |
 DownloadModel | 下载模型 | ✅ | `download_model()` |
-| LoadModel | - | ✅ | `set_models()` |
-| ModelStatus | - | ✅ | `assistant_status()` |
+| LoadModel | 加载模型 | ✅ | `set_models()` |
+| ModelStatus | 模型状态 | ✅ | `assistant_status()` |
 
 ## Troubleshooting
 
