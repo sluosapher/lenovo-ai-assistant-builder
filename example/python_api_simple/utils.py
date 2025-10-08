@@ -27,7 +27,6 @@ def check_middleware(stub):
         if not response.message:
             return False
         return response.message
-        return True
     except grpc.RpcError as e:
         print(f"gRPC error: {e.details()}")
         return False
