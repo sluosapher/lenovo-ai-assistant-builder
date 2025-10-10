@@ -38,3 +38,5 @@
 *.tar.gz binary
 *.exe binary
 *.dll binary
+*.mp4 binary
+*.mp4 -text
