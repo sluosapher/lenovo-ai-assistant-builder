@@ -17,15 +17,20 @@ Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-ass
 - Hotel search server (uses HTTP streamable protocol)
 - Math servers (uses stdio protocol)
 
-**How to Build and Run:**
+**Pre-built Executables Available:**
+Ready-to-use executables can be found at [mcp/mcp_servers/binary_build](https://github.com/intel/intel-ai-assistant-builder/tree/main/mcp/mcp_servers/binary_build)
 
-**Method 1: Building to Executable (Recommended)**
+**How to Build Your Own MCP Servers:**
+
+If you want to create your own custom MCP servers using our autogen framework, follow these methods:
+
+##### Method 1: Building to Executable (Recommended)
 1. Each MCP server example contains a build script (`build.bat` or `build.sh`)
 2. Run the build script in Command Prompt or PowerShell
 3. After successful build, the executable will be available in the `dist` folder
 4. **Prerequisites:** Python must be installed on your system to run the build scripts
 
-**Method 2: Running with PowerShell Script**
+##### Method 2: Running with PowerShell Script
 1. Each MCP server example contains a `run.ps1` script for direct execution
 2. Run the PowerShell script directly without building an executable
 3. **Prerequisites:** Python must be installed on your system
@@ -36,6 +41,7 @@ Checkout our examples in [mcp/mcp_servers](https://github.com/intel/intel-ai-ass
 1. In the Intel AI Assistant Builder UI, select **Command** as the connection type
 2. Set the **MCP Server Command** field to the full path of your generated executable
 3. Configure environment variables if needed (e.g., Flight and Hotel servers require `SERP_API_KEY` from [serpapi.com](https://serpapi.com))
+4. **For streamable HTTP servers:** If using servers that communicate via `http://127.0.0.1:port/mcp`, ensure localhost is not blocked by adding `NO_PROXY=127.0.0.1,localhost` to your environment variables
 
 See the math server example below for reference:
 
