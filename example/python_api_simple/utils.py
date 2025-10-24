@@ -1,6 +1,7 @@
 import sys
 import os
 from typing import Optional
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'example', 'python')))
 import json
 import grpc
@@ -37,13 +38,23 @@ def check_pybackend(stub):
         print("Calling superbuilder service APIs: SayHelloPyllm()")
         helloPyllmResponse = stub.SayHelloPyllm(sb.SayHelloRequest(
             name='SuperBuilder Python Clients!'))
-        if not helloPyllmResponse.message:
+        if not helloPyllmResponse:
             return False
-        return helloPyllmResponse.message
+        return helloPyllmResponse.message=="ready"
     except grpc.RpcError as e:
         print(f"gRPC error: {e.details()}")
         return False
 
+def load_models(stub):
+    try:
+        print("Calling APIs: LoadModels()")
+        response = stub.LoadModels(sb.LoadModelsRequest())
+        if not response:
+            return False
+        return response.status
+    except grpc.RpcError as e:
+        print(f"gRPC error: {e.details()}")
+        return False
 
 def aab_connect():
 

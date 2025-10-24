@@ -1,3 +1,5 @@
+import time
+import chat
 import utils
 import json
 from pprint import pprint
@@ -34,12 +36,10 @@ def llm_status(stub):
     SuperBuilder models, including RAG ones are ready
     when pybackend call returns ready.
     """
-
     is_chat_ready = utils.check_pybackend(stub)
-    is_rag_ready = is_chat_ready
-    is_model_ready = is_chat_ready
-
-
+    is_model_ready = utils.load_models(stub)
+    is_rag_ready = is_model_ready
+    return {"chat_ready": is_chat_ready, "model_ready": is_model_ready, "rag_ready": is_rag_ready}
 
 def get_software_update():
     """
@@ -95,6 +95,9 @@ def aab_init():
         return
     return success, stub, channel 
 
+SHOW_ASSISTANT_STATUS = False
+SHOW_MODEL_DOWNLOAD = False
+
 def main():
     success, stub, channel = aab_init()
     
@@ -103,6 +106,9 @@ def main():
         return
 
     try:
+        print("\n=== App Starts ===", )
+        print("Current  Time / 当前时间", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) 
+
         print("\n=== SuperBuilderStatus / 当前的SuperBuilder状态 ===")
         status = superbuilder_status(stub)
         if isinstance(status, str) and status:
@@ -124,37 +130,54 @@ def main():
         pprint(llm, width=120, sort_dicts=False)
         
         print("\n=== ChatEnable / 开启协议 ===")
-        print(f"Chat Ready: {is_chat_ready}")
-        
-        print("\n=== RagEnable / 开启RAG功能 ===")
-        print(f"RAG Ready: {is_rag_ready}")
+        print(f"Chat Ready: {llm['chat_ready']}")
         
         print("\n=== ModelStatus ===")
-        print(f"Model Ready: {is_model_ready}")
-        
-        print("\n=== Assistant Status ===")
-        res = assistant_status(stub)
-        assistant_name = res.get('full_name', {})
-        assistant_models = res.get('models', {})
-        print(f"Assistant Name: {assistant_name}")
-        pprint(assistant_models, width=120, sort_dicts=False)
+        print(f"Model Ready: {llm['model_ready']}")
 
-        print("\n=== Download / 下载SuperBuilder ===")
-        print("Downloading latest installer from Intel web portal...")
-        print("Skipping the actual download in this demo")
-        # download_installer(stub)
+        print("\n=== RagEnable / 开启RAG功能 ===")
+        print(f"RAG Ready: {llm['rag_ready']}")
 
-        print("\n=== Download / 下载 Model ===")
-        print("Downloading latest installer from Intel web portal...")
-        print("Skipping the actual download in this demo")
-        # download_model(stub)
+        if SHOW_ASSISTANT_STATUS:
+            print("\n=== Assistant Status ===")
+            res = assistant_status(stub)
+            assistant_name = res.get('full_name', {})
+            assistant_models = res.get('models', {})
+            print(f"Assistant Name: {assistant_name}")
+            pprint(assistant_models, width=120, sort_dicts=False)
 
+        if SHOW_MODEL_DOWNLOAD:
+            print("\n=== Download / 下载SuperBuilder ===")
+            print("Downloading latest installer from Intel web portal...")
+            print("Skipping the actual download in this demo")
+            # download_installer(stub)
 
-        print("\n=== Load Model ===")
-        model_path = utils.DEFAULT_MODEL_PATH        
-        print(f"Loading models from: {model_path}")
-        print("(Skipping actual model loading)")
-        # set_models(stub, model_path)
+            print("\n=== Download / 下载 Model ===")
+            print("Downloading latest installer from Intel web portal...")
+            print("Skipping the actual download in this demo")
+            # download_model(stub)
+
+            print("\n=== Load Model ===")
+            model_path = utils.DEFAULT_MODEL_PATH        
+            print(f"set models from: {model_path}")        
+            # print("(Skipping actual model loading)")
+            # set_models(stub, model_path)
+
+        print("Current  Time / 当前时间", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) 
+
+        if llm["chat_ready"]:
+            try:
+                prompt = "Hello, who are you?"
+                print("Simple chat: ", prompt)
+                session_id = chat.init_chat_session(stub)
+                response_iterator = chat.set_chat_request(stub, prompt, session_id)
+                chat.get_chat_response(response_iterator, verbose=True)
+                chat.remove_session(stub, session_id)
+            except Exception as e:
+                print(f"Error: {e}")
+
+        print("Current  Time / 当前时间", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())) 
+        print("\n=== App Ends ===", )
 
     except Exception as e:
         print(f"Error: {e}")
