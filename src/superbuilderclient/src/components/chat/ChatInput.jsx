@@ -13,6 +13,8 @@ const ChatInput = ({
         placeholder="Enter your prompt",
         activeFiles=[],
         defaultValueOnActiveFilesChange=false,
+        externalValue="",
+        externalSendTrigger=false,
     }) => {
     const [input, setInput] = useState(defaultValue);
     const defaultPlaceholderText = placeholder;
@@ -83,6 +85,21 @@ const ChatInput = ({
     useEffect(() => {
       focusChatInput();
     }, []);
+
+    // If an external message arrives, prefill input then auto-send
+    useEffect(() => {
+      if (!externalSendTrigger) return;
+      const text = (externalValue || "").trim();
+      if (!isChatReady || text === "") return;
+      setInput(text);
+      // Allow state to update before sending
+      setTimeout(() => {
+        // double-check still ready
+        if (inputRef.current) {
+          sendMessage();
+        }
+      }, 0);
+    }, [externalSendTrigger]);
 
     return (
       <div className="chat-input-container">

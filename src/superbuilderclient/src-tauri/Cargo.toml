@@ -43,6 +43,9 @@ tonic = "0.12"
 tokio = { version = "1.0", features = ["full"] }
 prost = "0.13"
 
+# lightweight HTTP endpoint (localhost PoC)
+axum = "0.7"
+
 #email
 lazy_static = "1.5.0"
 winreg = "0.53.0"
@@ -55,5 +58,4 @@ windows = { version = "0.39.0", features = [
   "Win32_Graphics_Dwm",
   "Win32_UI_Controls"
 ] }
-
 

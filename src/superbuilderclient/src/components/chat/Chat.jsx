@@ -15,6 +15,7 @@ import useDataStore from "../../stores/DataStore";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import ChatInput from "./ChatInput";
+import { listen } from "@tauri-apps/api/event";
 
 const CodeBlock = ({ language, value }) => {
   return (
@@ -147,6 +148,8 @@ const Chat = ({
   const { assistant } = useDataStore();
 
   const endRef = useRef();
+  const [externalValue, setExternalValue] = useState("");
+  const [externalSendTrigger, setExternalSendTrigger] = useState(false);
 
   const handleOpenFileLocation = async (filePath) => {
     try {
@@ -164,6 +167,28 @@ const Chat = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Listen for external prompts emitted from Tauri (localhost endpoint)
+  useEffect(() => {
+    let isSubscribed = true;
+    const unlistenPromise = listen("external_prompt", (event) => {
+      if (!isSubscribed) return;
+      try {
+        const payload = typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload;
+        const text = (payload?.text || "").trim();
+        if (text !== "") {
+          setExternalValue(text);
+          setExternalSendTrigger((prev) => !prev);
+        }
+      } catch (e) {
+        console.error("Failed to handle external_prompt:", e);
+      }
+    });
+    return () => {
+      isSubscribed = false;
+      unlistenPromise.then((f) => f()).catch(() => {});
+    };
+  }, []);
 
   const grayedOutClass =
     assistant?.models["chat_model"] == "chat_model" ? "grayed-out" : "";
@@ -252,6 +277,8 @@ const Chat = ({
         placeholder={placeholder}
         handleSendMessage={handleSendMessage}
         activeFiles={activeFiles}
+        externalValue={externalValue}
+        externalSendTrigger={externalSendTrigger}
       />
     </div>
   );

@@ -36,6 +36,29 @@ To build the frontend client, follow these steps:
    ```
    npm run tauri build
    ```
+
+## External Message Endpoint (PoC)
+
+When the app is running, it exposes a lightweight HTTP endpoint on localhost to inject messages into the current chat session.
+
+- Bind address: `127.0.0.1:6225`
+- Endpoints:
+  - `GET /healthz` → `{ "ok": true }`
+  - `POST /external-message` with JSON body `{ "text": "...", "chatId": 123? }`
+
+Example usage:
+
+```
+curl -s http://127.0.0.1:6225/healthz
+
+curl -s -X POST http://127.0.0.1:6225/external-message \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello from external app"}'
+```
+
+Notes:
+- For this PoC the server binds to localhost only and has relaxed security.
+- Messages are inserted into the chat input and auto-sent using the existing send path.
 ## Developer information
 
 Some icons are rendered using SVG files. An easy way to change the color of an SVG icon is to use a hexadecimal color to CSS filter converter.

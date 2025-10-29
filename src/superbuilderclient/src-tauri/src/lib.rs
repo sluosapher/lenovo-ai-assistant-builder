@@ -66,6 +66,10 @@ use image::imageops::FilterType;
 use image::ImageReader as ImageReader;
 use std::io::Cursor;
 use image::GenericImageView;
+use axum::{Router, routing::{post, get}, extract::State as AxumState, Json as AxumJson};
+use axum::http::StatusCode as AxumStatusCode;
+use serde::Deserialize as AxumDeserialize;
+use std::net::SocketAddr;
 
 #[derive(Serialize)]
 struct MissingModelsResponse {
@@ -329,6 +333,10 @@ pub async fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
+    // Start lightweight localhost HTTP server for external messages (PoC)
+    let app_handle = app.handle();
+    tokio::spawn(start_external_server(app_handle.clone()));
+
     app.run(|app, event| {
         match event {
             tauri::RunEvent::ExitRequested { .. } => {
@@ -337,4 +345,69 @@ pub async fn run() {
             _ => {}
         }
     });
+}
+
+#[derive(Clone)]
+struct HttpState {
+    app_handle: AppHandle,
+}
+
+#[derive(AxumDeserialize)]
+struct ExternalMessagePayload {
+    text: String,
+    #[allow(dead_code)]
+    #[serde(default)]
+    chatId: Option<i32>,
+}
+
+async fn healthz_handler() -> (AxumStatusCode, AxumJson<serde_json::Value>) {
+    (AxumStatusCode::OK, AxumJson(serde_json::json!({"ok": true})))
+}
+
+async fn external_message_handler(
+    AxumState(state): AxumState<HttpState>,
+    AxumJson(payload): AxumJson<ExternalMessagePayload>,
+) -> (AxumStatusCode, AxumJson<serde_json::Value>) {
+    if payload.text.trim().is_empty() {
+        return (
+            AxumStatusCode::BAD_REQUEST,
+            AxumJson(serde_json::json!({"error": "text is required"})),
+        );
+    }
+
+    // Emit to renderer; UI will listen for "external_prompt"
+    let _ = state
+        .app_handle
+        .emit("external_prompt", serde_json::json!({
+            "text": payload.text,
+            "chatId": payload.chatId,
+        }));
+
+    (
+        AxumStatusCode::ACCEPTED,
+        AxumJson(serde_json::json!({"status": "queued"})),
+    )
+}
+
+async fn start_external_server(app_handle: AppHandle) {
+    let state = HttpState { app_handle };
+
+    let router = Router::new()
+        .route("/healthz", get(healthz_handler))
+        .route("/external-message", post(external_message_handler))
+        .with_state(state);
+
+    let addr: SocketAddr = "127.0.0.1:6225".parse().unwrap();
+
+    let listener = match tokio::net::TcpListener::bind(addr).await {
+        Ok(l) => l,
+        Err(e) => {
+            eprintln!("[external-server] Failed to bind 127.0.0.1:6225: {e}");
+            return;
+        }
+    };
+
+    if let Err(e) = axum::serve(listener, router).await {
+        eprintln!("[external-server] HTTP server error: {e}");
+    }
 }
