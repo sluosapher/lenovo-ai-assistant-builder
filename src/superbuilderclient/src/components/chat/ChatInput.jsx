@@ -86,20 +86,48 @@ const ChatInput = ({
       focusChatInput();
     }, []);
 
-    // If an external message arrives, prefill input then auto-send
+    // Track if we have a pending external message to send when ready
+    const pendingExternal = useRef(false);
+    const pendingTextRef = useRef("");
+
+    // If an external message arrives, prefill input then auto-send when ready
     useEffect(() => {
-      if (!externalSendTrigger) return;
       const text = (externalValue || "").trim();
-      if (!isChatReady || text === "") return;
+      if (text === "") return;
       setInput(text);
-      // Allow state to update before sending
-      setTimeout(() => {
-        // double-check still ready
-        if (inputRef.current) {
-          sendMessage();
+      pendingTextRef.current = text;
+      if (isChatReady) {
+        // send immediately using provided text to avoid race with state update
+        const immediate = (pendingTextRef.current || text);
+        pendingExternal.current = false;
+        pendingTextRef.current = "";
+        if (immediate) {
+          const formatted = immediate.trim();
+          if (formatted) {
+            handleSendMessage(formatted);
+            setMessageComplete(false);
+          }
         }
-      }, 0);
+      } else {
+        pendingExternal.current = true;
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [externalSendTrigger]);
+
+    // When chat becomes ready, send any pending external input
+    useEffect(() => {
+      if (!isChatReady) return;
+      if (!pendingExternal.current) return;
+      const text = (pendingTextRef.current || input || "").trim();
+      pendingExternal.current = false;
+      pendingTextRef.current = "";
+      if (text) {
+        handleSendMessage(text);
+        setMessageComplete(false);
+        setInput("");
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isChatReady]);
 
     return (
       <div className="chat-input-container">
