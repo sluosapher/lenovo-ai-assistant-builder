@@ -68,8 +68,6 @@ const WorkflowSuperAgent = ({loading}) => {
             )}
             <Chat
                 readyToChat={true}
-                onMessageSend={() => setAttachedFilesVisible(false)}
-                onResubmitSend={() => setAttachedFilesVisible(false)}
                 queryType="SuperAgent"
                 loading={loading}
             />

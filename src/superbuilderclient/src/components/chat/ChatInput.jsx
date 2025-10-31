@@ -106,6 +106,7 @@ const ChatInput = ({
           if (formatted) {
             handleSendMessage(formatted);
             setMessageComplete(false);
+            setInput("");
           }
         }
       } else {
