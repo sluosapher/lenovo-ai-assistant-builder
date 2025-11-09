@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import "./SimpleAlert.css";
+// inline styles applied to avoid dev-time CSS import issues
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -32,7 +32,7 @@ const SimpleAlert = ({
                 {content}
             </DialogContentText>
         </DialogContent>
-        <DialogActions className="simple-alert-options">
+        <DialogActions sx={{ display: 'flex', alignSelf: 'center' }}>
             <Button onClick={onConfirm} autoFocus variant="contained">
                 {confirmText}
             </Button>
