@@ -59,7 +59,10 @@ mod config;
 mod status;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::fs::OpenOptions;
+use std::path::{Path, PathBuf};
+use std::io::Write;
+use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use std::process::Command;
 use base64::{ engine::general_purpose::STANDARD, Engine as _ };
@@ -329,6 +332,8 @@ pub async fn run() {
                 get_active_mcp_servers,
                 get_mcp_server_tools,
                 validate_model,
+                init_chat_log,
+                append_chat_log,
             ]
         )
         .build(tauri::generate_context!())
@@ -346,6 +351,59 @@ pub async fn run() {
             _ => {}
         }
     });
+}
+
+fn get_home_dir() -> Option<PathBuf> {
+    #[cfg(target_os = "windows")]
+    {
+        std::env::var("USERPROFILE").ok().map(PathBuf::from)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        std::env::var("HOME").ok().map(PathBuf::from)
+    }
+}
+
+fn get_log_path_for_session(sid: i32) -> Result<PathBuf, String> {
+    let home = get_home_dir().ok_or_else(|| "Unable to determine home directory".to_string())?;
+    let log_dir = home.join(".workflow");
+    if !log_dir.exists() {
+        fs::create_dir_all(&log_dir).map_err(|e| format!("Failed to create log directory: {}", e))?;
+    }
+    let filename = format!("chat_session_{}.log", sid);
+    Ok(log_dir.join(filename))
+}
+
+#[tauri::command]
+fn init_chat_log(sid: i32) -> Result<bool, String> {
+    let path = get_log_path_for_session(sid)?;
+    // Ensure file exists; do not truncate if it already exists
+    let _ = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("Failed to initialize log file: {}", e))?;
+    Ok(true)
+}
+
+#[tauri::command]
+fn append_chat_log(sid: i32, role: String, text: String) -> Result<bool, String> {
+    let path = get_log_path_for_session(sid)?;
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("Failed to open log file: {}", e))?;
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    // Basic JSONL line: {"timestamp": 123, "role": "user|assistant", "text": "..."}
+    let safe_text = text.replace('\n', "\\n");
+    let line = format!("{{\"timestamp\": {}, \"role\": \"{}\", \"text\": \"{}\"}}\n", ts, role, safe_text);
+    file.write_all(line.as_bytes())
+        .map_err(|e| format!("Failed to write to log file: {}", e))?;
+    Ok(true)
 }
 
 #[derive(Clone)]

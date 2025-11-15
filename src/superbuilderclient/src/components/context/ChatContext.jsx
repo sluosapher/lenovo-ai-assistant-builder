@@ -1,6 +1,6 @@
 ﻿import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useState, createContext, useEffect, useContext, React } from "react";
+import { useState, createContext, useEffect, useContext, useRef, React } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { RagReadyContext } from "./RagReadyContext";
 import { produce } from "immer";
@@ -20,6 +20,7 @@ export const ChatProvider = ({ children }) => {
   const [isWaitingForFirstToken, setWaitingForFirstToken] = useState(false);
   const [isStreamCompleted, setStreamCompleted] = useState(true);
   const [messages, setMessages] = useState([]);
+  const messagesRef = useRef([]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false); // only load chat history on start
   const [modelLoaded, setModelLoaded] = useState(false); // keep track for cold start status
   const [chatHistorySize, setChatHistorySize] = useState(0); // changing will not do anything, controlled by MW config DB
@@ -29,6 +30,11 @@ export const ChatProvider = ({ children }) => {
   const { t } = useTranslation();
   const [useSemanticSplitter, setUseSemanticSplitter] = useState(0); // changing will not do anything, controlled by MW config DB
   const [useAllFiles, setUseAllFiles] = useState(0); // set from config, always selects all files to be active whenever possible
+  const selectedSessionRef = useRef(0);
+
+  // keep refs in sync with latest state
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { selectedSessionRef.current = selectedSession; }, [selectedSession]);
 
   // Extract chatHistorySize from assistant.parameters
   useEffect(() => {
@@ -179,6 +185,8 @@ export const ChatProvider = ({ children }) => {
     );
     setMessages([...newSession.messages]);
     setSelectedSession(newSessionId);
+    // initialize per-session chat log file
+    invoke("init_chat_log", { sid: newSessionId }).catch(() => {});
     setSessionSwitched(!sessionSwitched);
     console.log("New session added with id of: ", newSessionId);
   };
@@ -318,6 +326,16 @@ export const ChatProvider = ({ children }) => {
           return;
         }
         setStreamCompleted(true);
+        // on stream completion, log the assistant's full message for this session
+        try {
+          const msgs = messagesRef.current;
+          if (msgs && msgs.length > 0) {
+            const last = msgs[msgs.length - 1];
+            if (last && last.sender === "assistant" && last.text && last.text !== "") {
+              invoke("append_chat_log", { sid: selectedSessionRef.current, role: "assistant", text: last.text });
+            }
+          }
+        } catch (e) {}
       });
     };
     setupCompletedListener();
@@ -393,6 +411,8 @@ export const ChatProvider = ({ children }) => {
         };
         setSessions((prevSession) => [...prevSession, newSession]);
         setSelectedSession(newSessionId);
+        // initialize per-session chat log file on first app-created session
+        try { await invoke("init_chat_log", { sid: newSessionId }); } catch (e) {}
         setMessages([]);
       } catch (error) {
         console.error("Error while loading chat history: ", error);
@@ -436,10 +456,12 @@ export const ChatProvider = ({ children }) => {
     // console.warn("previous", messages);
 
     // format messages properly for API
+    const sessionNote = "\n\nThe current session Id: " + String(selectedSession);
     let contextHistory = [];
     previousMessages.forEach((message) => {
       if (message.text != "") {
-        contextHistory.push({ Role: message.sender, Content: message.text });
+        const content = message.sender === "user" ? (message.text + sessionNote) : message.text;
+        contextHistory.push({ Role: message.sender, Content: content });
       }
     });
 
@@ -472,6 +494,9 @@ export const ChatProvider = ({ children }) => {
 
     const promptOptions = buildPromptRequest(queryType);
 
+    // log user message with timestamp via tauri backend
+    try { await invoke("append_chat_log", { sid: selectedSession, role: "user", text: input }); } catch (e) {}
+
     setMessages([...messages, newMessage, responseMessage]);
     setWaitingForFirstToken(true);
     setStreamCompleted(false);
@@ -488,9 +513,10 @@ export const ChatProvider = ({ children }) => {
         "\nPrompt Options: ",
         promptOptions,
       );
+      const promptForLLM = input + sessionNote;
       await invoke("call_chat", {
         name: "UI",
-        prompt: input,
+        prompt: promptForLLM,
         conversationHistory: contextHistory,
         sid: selectedSession,
         files: JSON.stringify(selectedFiles),
