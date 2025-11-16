@@ -277,20 +277,127 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     let isSubscribed = true;
-    const unlistenFirstword = listen("first_word", (_event) => {
-      if (!isSubscribed) {
-        return;
-      }
+    let unlistenFirstword;
+    const setupFirstWordListener = async () => {
+      unlistenFirstword = await listen("first_word", (_event) => {
+        if (!isSubscribed) {
+          return;
+        }
 
-      setWaitingForFirstToken(false);
-      setModelLoaded(true); // model is now loaded
-    });
+        setWaitingForFirstToken(false);
+        setModelLoaded(true); // model is now loaded
+      });
+    };
+    setupFirstWordListener();
 
     return () => {
       isSubscribed = false;
-      unlistenFirstword.then((f) => f());
+      if (unlistenFirstword) {
+        unlistenFirstword();
+      }
     };
   }, []);
+
+  // Listen for external requests to open a new chat session
+  useEffect(() => {
+    let isSubscribed = true;
+    let unlistenExternalNewChat;
+
+    const setupExternalNewChatListener = async () => {
+      try {
+        unlistenExternalNewChat = await listen("external_new_chat", (event) => {
+          if (!isSubscribed) {
+            return;
+          }
+
+          try {
+            const payload =
+              typeof event.payload === "string"
+                ? JSON.parse(event.payload)
+                : event.payload;
+            const rawType =
+              (payload && (payload.type || payload.chatType)) || "regular";
+            const normalized = String(rawType).toLowerCase();
+            const workflowType =
+              normalized === "super-agent" ||
+              normalized === "super_agent" ||
+              normalized === "superagent"
+                ? "SuperAgent"
+                : "Generic";
+
+            // Switch workflow based on requested chat type
+            setWorkflow(workflowType);
+
+            // Create or reuse an empty session with no attachments
+            setSessions((prevSessions) => {
+              let maxId = 0;
+              let reusableId = null;
+
+              const clearedSelection = prevSessions.map((session) => {
+                if (session.id > maxId) {
+                  maxId = session.id;
+                }
+                if (
+                  reusableId === null &&
+                  session.selected &&
+                  session.messages &&
+                  session.messages.length === 0
+                ) {
+                  reusableId = session.id;
+                }
+                return { ...session, selected: false };
+              });
+
+              const newId = reusableId !== null ? reusableId : maxId + 1;
+
+              let nextSessions;
+              if (reusableId !== null) {
+                nextSessions = clearedSelection.map((session) =>
+                  session.id === newId
+                    ? { ...session, selected: true }
+                    : session
+                );
+              } else {
+                const newSession = {
+                  id: newId,
+                  name: t("chat.new_session"),
+                  date: new Date(),
+                  messages: [],
+                  selected: true,
+                };
+                nextSessions = [...clearedSelection, newSession];
+              }
+
+              setSelectedSession(newId);
+              setMessages([]);
+              setSessionSwitched((prev) => !prev);
+
+              return nextSessions;
+            });
+          } catch (error) {
+            console.error(
+              "Error while handling external_new_chat event: ",
+              error
+            );
+          }
+        });
+      } catch (error) {
+        console.error(
+          "Failed to set up external_new_chat listener: ",
+          error
+        );
+      }
+    };
+
+    setupExternalNewChatListener();
+
+    return () => {
+      isSubscribed = false;
+      if (unlistenExternalNewChat) {
+        unlistenExternalNewChat();
+      }
+    };
+  }, [setWorkflow, t]);
 
   useEffect(() => {
     let isSubscribed = true;

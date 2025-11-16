@@ -359,6 +359,12 @@ struct HttpState {
 }
 
 #[derive(AxumDeserialize)]
+struct NewChatPayload {
+    #[serde(default)]
+    chatType: Option<String>,
+}
+
+#[derive(AxumDeserialize)]
 struct ExternalMessagePayload {
     text: String,
     #[allow(dead_code)]
@@ -374,6 +380,42 @@ struct ChatHistoryQuery {
 
 async fn healthz_handler() -> (AxumStatusCode, AxumJson<serde_json::Value>) {
     (AxumStatusCode::OK, AxumJson(serde_json::json!({"ok": true})))
+}
+
+async fn new_chat_handler(
+    AxumState(state): AxumState<HttpState>,
+    AxumJson(payload): AxumJson<NewChatPayload>,
+) -> (AxumStatusCode, AxumJson<serde_json::Value>) {
+    let raw_type = payload
+        .chatType
+        .unwrap_or_else(|| "regular".to_string());
+
+    let normalized = raw_type.trim().to_lowercase();
+    let chat_type = if normalized == "super-agent"
+        || normalized == "super_agent"
+        || normalized == "superagent"
+    {
+        "super-agent"
+    } else {
+        "regular"
+    };
+
+    // Notify the frontend to open a new chat session of the requested type.
+    // The UI will map this to the appropriate workflow (Generic vs SuperAgent)
+    // and create a fresh, attachment-free session.
+    let _ = state
+        .app_handle
+        .emit("external_new_chat", serde_json::json!({
+            "type": chat_type,
+        }));
+
+    (
+        AxumStatusCode::ACCEPTED,
+        AxumJson(serde_json::json!({
+            "status": "queued",
+            "type": chat_type,
+        })),
+    )
 }
 
 async fn external_message_handler(
@@ -465,6 +507,7 @@ async fn start_external_server(app_handle: AppHandle) {
 
     let router = Router::new()
         .route("/healthz", get(healthz_handler))
+        .route("/new_chat", post(new_chat_handler))
         .route("/external-message", post(external_message_handler))
         .route("/chat-history", get(chat_history_handler))
         .with_state(state);
