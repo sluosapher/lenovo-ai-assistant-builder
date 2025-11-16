@@ -185,8 +185,7 @@ export const ChatProvider = ({ children }) => {
     );
     setMessages([...newSession.messages]);
     setSelectedSession(newSessionId);
-    // initialize per-session chat log file
-    invoke("init_chat_log", { sid: newSessionId }).catch(() => {});
+    // file-based chat logging removed
     setSessionSwitched(!sessionSwitched);
     console.log("New session added with id of: ", newSessionId);
   };
@@ -326,16 +325,6 @@ export const ChatProvider = ({ children }) => {
           return;
         }
         setStreamCompleted(true);
-        // on stream completion, log the assistant's full message for this session
-        try {
-          const msgs = messagesRef.current;
-          if (msgs && msgs.length > 0) {
-            const last = msgs[msgs.length - 1];
-            if (last && last.sender === "assistant" && last.text && last.text !== "") {
-              invoke("append_chat_log", { sid: selectedSessionRef.current, role: "assistant", text: last.text });
-            }
-          }
-        } catch (e) {}
       });
     };
     setupCompletedListener();
@@ -411,8 +400,7 @@ export const ChatProvider = ({ children }) => {
         };
         setSessions((prevSession) => [...prevSession, newSession]);
         setSelectedSession(newSessionId);
-        // initialize per-session chat log file on first app-created session
-        try { await invoke("init_chat_log", { sid: newSessionId }); } catch (e) {}
+        // file-based chat logging removed
         setMessages([]);
       } catch (error) {
         console.error("Error while loading chat history: ", error);
@@ -493,9 +481,6 @@ export const ChatProvider = ({ children }) => {
     }
 
     const promptOptions = buildPromptRequest(queryType);
-
-    // log user message with timestamp via tauri backend
-    try { await invoke("append_chat_log", { sid: selectedSession, role: "user", text: input }); } catch (e) {}
 
     setMessages([...messages, newMessage, responseMessage]);
     setWaitingForFirstToken(true);

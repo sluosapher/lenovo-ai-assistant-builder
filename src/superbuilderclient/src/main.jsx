@@ -16,6 +16,12 @@ import { WorkflowContextProvider } from "./components/context/WorkflowContext";
 
 const startApp = async () => {
   await initializeI18n();
+  // In development, load a simple test harness that exposes chat history utilities
+  // on window.ChatHistoryTest for quick manual validation via DevTools.
+  if (import.meta && import.meta.env && import.meta.env.DEV) {
+    // Dynamic import to avoid affecting production bundles
+    import("./dev/chatHistoryTestHarness").catch(() => {});
+  }
   
   const root = ReactDOM.createRoot(document.getElementById('root'));
   root.render(

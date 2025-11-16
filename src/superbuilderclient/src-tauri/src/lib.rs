@@ -59,10 +59,10 @@ mod config;
 mod status;
 use std::env;
 use std::fs;
-use std::fs::OpenOptions;
-use std::path::{Path, PathBuf};
-use std::io::Write;
-use std::time::{SystemTime, UNIX_EPOCH};
+// (Removed) OpenOptions previously used for file-based logging
+use std::path::Path;
+// (Removed) Write previously used for file-based logging
+// (Removed) SystemTime/UNIX_EPOCH previously used for file-based logging
 use serde::Serialize;
 use std::process::Command;
 use base64::{ engine::general_purpose::STANDARD, Engine as _ };
@@ -70,7 +70,7 @@ use image::imageops::FilterType;
 use image::ImageReader as ImageReader;
 use std::io::Cursor;
 use image::GenericImageView;
-use axum::{Router, routing::{post, get}, extract::State as AxumState, Json as AxumJson};
+use axum::{Router, routing::{post, get}, extract::{State as AxumState, Query as AxumQuery}, Json as AxumJson};
 use axum::http::StatusCode as AxumStatusCode;
 use serde::Deserialize as AxumDeserialize;
 use std::net::SocketAddr;
@@ -332,8 +332,6 @@ pub async fn run() {
                 get_active_mcp_servers,
                 get_mcp_server_tools,
                 validate_model,
-                init_chat_log,
-                append_chat_log,
             ]
         )
         .build(tauri::generate_context!())
@@ -353,58 +351,7 @@ pub async fn run() {
     });
 }
 
-fn get_home_dir() -> Option<PathBuf> {
-    #[cfg(target_os = "windows")]
-    {
-        std::env::var("USERPROFILE").ok().map(PathBuf::from)
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        std::env::var("HOME").ok().map(PathBuf::from)
-    }
-}
-
-fn get_log_path_for_session(sid: i32) -> Result<PathBuf, String> {
-    let home = get_home_dir().ok_or_else(|| "Unable to determine home directory".to_string())?;
-    let log_dir = home.join(".workflow");
-    if !log_dir.exists() {
-        fs::create_dir_all(&log_dir).map_err(|e| format!("Failed to create log directory: {}", e))?;
-    }
-    let filename = format!("chat_session_{}.log", sid);
-    Ok(log_dir.join(filename))
-}
-
-#[tauri::command]
-fn init_chat_log(sid: i32) -> Result<bool, String> {
-    let path = get_log_path_for_session(sid)?;
-    // Ensure file exists; do not truncate if it already exists
-    let _ = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&path)
-        .map_err(|e| format!("Failed to initialize log file: {}", e))?;
-    Ok(true)
-}
-
-#[tauri::command]
-fn append_chat_log(sid: i32, role: String, text: String) -> Result<bool, String> {
-    let path = get_log_path_for_session(sid)?;
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&path)
-        .map_err(|e| format!("Failed to open log file: {}", e))?;
-    let ts = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
-    // Basic JSONL line: {"timestamp": 123, "role": "user|assistant", "text": "..."}
-    let safe_text = text.replace('\n', "\\n");
-    let line = format!("{{\"timestamp\": {}, \"role\": \"{}\", \"text\": \"{}\"}}\n", ts, role, safe_text);
-    file.write_all(line.as_bytes())
-        .map_err(|e| format!("Failed to write to log file: {}", e))?;
-    Ok(true)
-}
+// Removed legacy file-based chat logging; chat history is accessed via middleware APIs.
 
 #[derive(Clone)]
 struct HttpState {
@@ -417,6 +364,12 @@ struct ExternalMessagePayload {
     #[allow(dead_code)]
     #[serde(default)]
     chatId: Option<i32>,
+}
+
+#[derive(AxumDeserialize)]
+struct ChatHistoryQuery {
+    #[serde(default)]
+    sid: Option<i32>,
 }
 
 async fn healthz_handler() -> (AxumStatusCode, AxumJson<serde_json::Value>) {
@@ -448,12 +401,72 @@ async fn external_message_handler(
     )
 }
 
+async fn chat_history_handler(
+    AxumState(state): AxumState<HttpState>,
+    AxumQuery(params): AxumQuery<ChatHistoryQuery>,
+) -> (AxumStatusCode, AxumJson<serde_json::Value>) {
+    // Access shared gRPC client from Tauri state
+    let shared_client = state
+        .app_handle
+        .state::<SharedClient>()
+        .inner()
+        .clone();
+
+    let mut guard = shared_client.lock().await;
+
+    let client_ref = match guard.as_mut() {
+        Some(c) => c,
+        None => {
+            return (
+                AxumStatusCode::SERVICE_UNAVAILABLE,
+                AxumJson(serde_json::json!({"error": "client not initialized"})),
+            );
+        }
+    };
+
+    let request = super_builder::GetChatHistoryRequest {};
+    let response = match client_ref.get_chat_history(request).await {
+        Ok(r) => r,
+        Err(e) => {
+            return (
+                AxumStatusCode::BAD_GATEWAY,
+                AxumJson(serde_json::json!({"error": format!("grpc error: {}", e)})),
+            );
+        }
+    };
+
+    let data = response.into_inner().data;
+    let mut value: serde_json::Value = match serde_json::from_str(&data) {
+        Ok(v) => v,
+        Err(e) => {
+            return (
+                AxumStatusCode::INTERNAL_SERVER_ERROR,
+                AxumJson(serde_json::json!({"error": format!("invalid json: {}", e)})),
+            );
+        }
+    };
+
+    if let Some(target_sid) = params.sid {
+        // Filter array by sid if provided
+        if let serde_json::Value::Array(arr) = value {
+            let filtered: Vec<serde_json::Value> = arr
+                .into_iter()
+                .filter(|s| s.get("sid").and_then(|v| v.as_i64()).map(|v| v as i32 == target_sid).unwrap_or(false))
+                .collect();
+            value = serde_json::Value::Array(filtered);
+        }
+    }
+
+    (AxumStatusCode::OK, AxumJson(value))
+}
+
 async fn start_external_server(app_handle: AppHandle) {
     let state = HttpState { app_handle };
 
     let router = Router::new()
         .route("/healthz", get(healthz_handler))
         .route("/external-message", post(external_message_handler))
+        .route("/chat-history", get(chat_history_handler))
         .with_state(state);
 
     let addr: SocketAddr = "127.0.0.1:6225".parse().unwrap();
